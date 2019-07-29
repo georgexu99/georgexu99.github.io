@@ -3,118 +3,226 @@
 	<head>
 		<title>George Xu</title>
 		<link rel = "icon" href="images/download.png">
+		<meta name="description" content="Learn more about me!">
 		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-		<link rel="stylesheet" href="assets/css/main.css" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1.0, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/material.min.css" />
 	</head>
-	<body class="is-preload">
 
-		<!-- Header -->
-			<div id="header">
-				<img src= "images/George_Xu_Headshot1.png">
-				<br>
-				<h1>Hi, I'm George.</h1>
-				<p>Passionate Coder, Aspiring Developer and
-				<br>
-				Combined Business and Computer Science Student
-			</p>
-			<ul class="actions special">
-						<li><a href="images/resume.pdf" download class="button">Resume</a></li>
-					</ul>
-			</div>
+	<style>
 
-		<!-- Main -->
-			<div id="main">
-
-				<header class="projects">
-					<h2>PROJECTS</h2>
-					<p> featured summary of some of my personal projects</p>
-				</header>
-
-				<div class="box alt container">
-					<section class="feature left">
-
-						<a href="http://eemdr.tech" class="image"><img src="images/pic01.png" alt="" /></a>
-						<div class="content">
-							<h3>vrEMDR</h3>
-				    <blockquote>
-							<p>2nd place hackathon project <br>
-							<b>Prompt :</b>
-							" encourage PTSD victims to seek professional treatment"
-							<br>
-							<b>Solution :</b>
-							"vrEMDR is an accessible, cheap and approachable way to bring the treament to their homes."
-						</p>
-					</blockquote>
+			@font-face {
+				font-family: 'AaarghNormal';
+				src: url('assets/fonts/Aaargh-webfont.woff') format('woff'),
+					 url('assets/fonts/Aaargh-webfont.ttf') format('truetype'),
+					 url('assets/fonts/Aaargh-webfont.svg') format('svg');
+				font-weight: normal;
+				font-style: normal;
+			}
+			
+			body {
+				background-color: rgb(24,24,73);
+				font-family: AaarghNormal;
+				background: url('assets/imgs/materialplanet.png') 0 0 / 175vmax 175vmax;
+			}
+			
+			.mdl-layout__header-row span.mdl-layout-title {
+			  text-transform: uppercase;
+			}
+			
+			.custom-header .material-icons {
+				font-size: 1.54em;
+			}
+			
+			.custom-header a.mdl-navigation__link {
+			  font-weight: 700;
+			  font-size: 14px;
+			}
+			
+			.mdl-layout__drawer a.mdl-navigation__link {
+			  font-weight: 700;
+			  font-size: 14px;
+			}
+			
+			button {
+				color: white;
+			}
+			
+			.correction-on-span {
+				width: 186.619px;
+				height: 186.619px;
+				transform: translate(-50%, -50%) translate(45px, 11px);
+			}
+			
+			#about-list {
+				margin: 60px 0;
+				list-style: none;
+			}
+			
+			h1, h4 {
+				margin: 35px 0;
+				text-align: center;
+				color: white;
+			}
+			
+			h1 {
+				font-size: 5vmin;
+			}
+			
+			h4 {
+				font-size: 3.5vmin;
+				width: 80%;
+				margin: auto;
+				font-weight: 600;
+			}
+			
+			h6 {
+				color: white;
+				text-align: center;
+				font-weight: 600;
+			}
+			
+			#links-div {
+				width: 50%;
+				margin: 50px auto;
+				position: relative;
+			}
+			
+			#about-list {
+				margin-top: 80px;
+				position: relative;
+				padding: 0px;
+			}
+			
+			#about-list li {
+				float: left;
+				text-align: center;
+				display: inline;
+				width: 20%;	
+			}
+			
+			#about-list li img {
+				height: 7vmin;
+				cursor: pointer;
+			}
+			
+			@media screen and (max-width: 500px) {
+				#name-title {
+					font-size: 1.75vmax;
+					/*margin-left: -30px;*/
+				}
+			
+				.mdl-layout__header-row {
+					padding-left: 30px;
+				}
+			}
+			
+			@media screen and (max-width: 350px) {
+				#name-title {
+					font-size: 1.5vmax;
+					/*margin-left: -40px;*/
+				}
+			
+				.mdl-layout__header-row {
+					padding-left: 20px;
+				}
+			
+			}
+			
+	</style>
+	<body>
+		<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+			<header class="custom-header mdl-layout__header mdl-layout__header--waterfall">
+	        	<div class="mdl-layout__header-row">
+	            	<span class="mdl-layout-title  mdl-layout--large-screen-only" id="name-title">GEORGE XU</span>
+	            	<div class="mdl-layout-spacer"></div>
+	            	<nav class="mdl-navigation">
+	                	<a  href="projects.html"  class="mdl-button mdl-js-button mdl-button--white mdl-js-ripple-effect" style="color:white" id="github" data-upgraded=",MaterialButton,MaterialRipple" tabindex="0">Projects<span class="mdl-button__ripple-container"><span class="mdl-ripple is-animating correction-on-span"></span></span></a>
+	                	<a class="mdl-button mdl-js-button mdl-button--white mdl-js-ripple-effect" style="color:white" id="github" data-upgraded=",MaterialButton,MaterialRipple" tabindex="0">Resume<span class="mdl-button__ripple-container"><span class="mdl-ripple is-animating correction-on-span"></span></span></a>
+	            	</nav>
+	        	</div>
+			</header>
+			<main class="mdl-layout__content">
+					<div class="page-content">
+						<h1>George Xu</h1>
+						<h4>
+							I am<br>
+							<span id="js-rotating-1">
+								a passionate coder. |
+								an aspiring developer. |
+								a Business and Computer Science Student. |
+								a lively team player |
+								a choral performing artist.
+							</span><br><br>
+							My interests are<br><span id="js-rotating-2">
+								big data analytics. |
+								data visualization. |
+								internet of things. |
+								cloud computing. |
+								distributed systems. 
+							</span><br><br>
+							I have worked with<br>
+							<span id="js-rotating-3">
+								Java. |
+								Source Control. |
+								Assembly. |
+								HTML/CSS. |
+								R.	|
+								Javascript. |
+								Reactjs. |
+								Nodejs. |
+								MongoDB. |
+								C/C++. |
+								Latex.
+							</span>
+						</h4>
+						<div id="links-div">
+							<ul id="about-list">
+								<h6>Get in touch</h6>
+								<li>
+									<a href="https://github.com/georgexu99">
+										<img src="assets/svg/github.svg" alt="Github" title="Github">
+									</a>
+								</li>
+								<li>
+									<a href="mailto:george.xu99@hotmail.com">
+										<img src="assets/svg/email.svg" alt="Email" title="Email">
+									</a>
+								</li>
+								<li>
+									<a href="https://linkedin.com/in/georgexu-">
+										<img src="assets/svg/linkedin.svg" alt="Linkedin" title="Linkedin">
+									</a>
+								</li>
+							</ul>
 						</div>
-					</section>
-					<section class="feature right">
-						<a href="#" class="image"><img src="images/pic02.png" alt="" /></a>
-						<div class="content">
-							<h3>CookieClicker Bot</h3>
-							<blockquote>
-								<p>Selenium autoclicker script <br>
-									<b>Prompt: </b>
-									"tired of constantly clicking to get your cookies?"
-									<br>
-									<b>Solution: </b>
-									"turn on the clicker bot and let it do the work for you."
-								</p>
-							</blockquote>
-						</div>
-					</section>
-					<section class="feature left">
-						<a href="#" class="image"><img src="images/pic03.png" alt="" /></a>
-						<div class="content">
-							<h3>Tom Lee Companion</h3>
-							<blockquote>
-							<p>Chrome extension to make my part-time job easier<br>
-								<b>Prompt: </b>
-								"slow e-commerce site makes it hard to search items up"
-								<br>
-								<b>Solution: </b>
-								": load item SKUs right on the home-screen"
-							</p>
-						</blockquote>
-						</div>
-					</section>
-					<section class="feature right">
-						<a href="#" class="image"><img src="images/pic04.png" alt="" /></a>
-						<div class="content">
-							<h3>myFridge</h3>
-							<blockquote>
-							<p>a virtual fridge<br>
-								<b>Prompt: </b>
-								"what's in my fridge?"
-								<br>
-								<b>Solution: </b>
-								": myFridge tells you what's expired and what's running low"
-							</p>
-						</blockquote>
-						</div>
-					</section>
-				</div>
-			</div>
-			<div id="footer">
-				<div class"container medium">
-					<header class = "major last">
-						<h3>Contact</h3>
+					</div>
+				</main>
 
-					<ul class="icons">
-						<li><a href="http://www.linkedin.com/in/georgexu-" class="icon fa-linkedin"><span class="label">Linkedin</span></a></li>
-						<li><a href="http://www.github.com/georgexu99" class="icon fa-github"><span class="label">Github</span></a></li>
 
-					</ul>
 
-				</div>
-			</div>
+		</div>
+
 
 		<!-- Scripts -->
+			<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+			<link rel="stylesheet" type="text/css" href="morphtext/animate.css">
+			<link rel="stylesheet" href="morphtext/morphext.css">
+			<script src="morphtext/morphext.js"></script>
 			<script src="assets/js/jquery.min.js"></script>
 			<script src="assets/js/browser.min.js"></script>
 			<script src="assets/js/breakpoints.min.js"></script>
 			<script src="assets/js/util.js"></script>
 			<script src="assets/js/main.js"></script>
-
+			<script type="text/javascript">
+				$("#js-rotating-1,#js-rotating-2,#js-rotating-3").Morphext({
+					animation: "flipInX",
+					separator: "|",
+					speed: 2000,
+					complete: function () {
+						// Called after the entrance animation is executed.
+					}
+				});
+			</script>
 	</body>
 </html>

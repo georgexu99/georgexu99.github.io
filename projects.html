@@ -1,0 +1,496 @@
+<!-- <meta http-equiv="refresh" content="4"> -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="A front-end template that helps you build fast, modern mobile web apps.">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <title>Anurag El Dorado</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="material.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:regular,bold,italic,thin,light,bolditalic,black,medium&amp;lang=en">
+ 
+  <style>
+
+  @font-face {
+    font-family: 'AaarghNormal';
+    src: url('static/font/Aaargh-webfont.woff') format('woff'),
+         url('static/font/Aaargh-webfont.ttf') format('truetype'),
+         url('static/font/Aaargh-webfont.svg') format('svg');
+    font-weight: normal;
+    font-style: normal;
+  }
+
+  body {
+    /*background-color: rgb(24,24,73);*/
+    background: url('static/img/materialplanet.png') 0 0 / 175vmax 175vmax;
+    font-family: AaarghNormal;
+    text-align: center;
+  }
+
+  #container {
+    width: 100%;
+    text-align: center;
+  }
+
+  .demo-card-square.mdl-card {
+    width: 22%;
+    height: 300px;
+    max-width: 320px;
+    /*min-width: 170px;*/
+    float: left;
+    margin: 2% 1.5%;
+    position: relative;
+    text-align: left;
+  }
+
+  .demo-card-square > .mdl-card__title {
+    color: #fff;
+  }
+
+
+  .mdl-card__title-text {
+    background: rgba(0, 0, 0, 0.55);
+    border-radius: 4px;
+    padding: 3px;
+  }
+
+  .mdl-card__supporting-text {
+     color: rgba(0,0,0,1); 
+     font-size: 1em; 
+  }
+
+  .mdl-button {
+    min-width: 32px;
+  }
+
+  @media only screen and (max-width: 880px) {
+    .demo-card-square.mdl-card {
+      width: 30%;
+    }
+
+  }
+
+  @media only screen and (max-width: 610px) {
+    .demo-card-square.mdl-card {
+      width: 46%;
+    }
+   .mdl-layout__header-row span {
+      position: absolute;
+      top: 19px;
+      left: 12px;
+      font-size: 4vmin;
+    }
+    .mdl-button {
+      padding: 0 14px;
+    }
+  }
+
+
+/*642 420*/
+  </style>
+</head>
+
+<body>
+  
+    <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+        <header class="custom-header mdl-layout__header mdl-layout__header--waterfall">
+          <div class="mdl-layout__header-row">
+              <span class="mdl-layout-title  mdl-layout--large-screen-only">ANURAG EL DORADO</span>
+              <div class="mdl-layout-spacer"></div>
+              <nav class="mdl-navigation">
+                  <a onclick="draw('all')"  class="mdl-button mdl-js-button mdl-button--white mdl-js-ripple-effect" style="color:white" id="github" data-upgraded=",MaterialButton,MaterialRipple" tabindex="0">&lt;&lt; ALL<span class="mdl-button__ripple-container"><span class="mdl-ripple is-animating correction-on-span"></span></span></a>
+                  <a  href="index.html"  class="mdl-button mdl-js-button mdl-button--white mdl-js-ripple-effect" style="color:white" id="github" data-upgraded=",MaterialButton,MaterialRipple" tabindex="0">Home<span class="mdl-button__ripple-container"><span class="mdl-ripple is-animating correction-on-span"></span></span></a>
+                  <a class="mdl-button mdl-js-button mdl-button--white mdl-js-ripple-effect" style="color:white" id="github" data-upgraded=",MaterialButton,MaterialRipple" tabindex="0">Resume<span class="mdl-button__ripple-container"><span class="mdl-ripple is-animating correction-on-span"></span></span></a>
+              </nav>
+          </div>
+      </header>
+
+  <div id="container"></div>
+
+    </div>
+<!-- 
+<div class="demo-card-square mdl-card mdl-shadow--2dp">
+  <div class="mdl-card__title mdl-card--expand">
+    <h2 class="mdl-card__title-text">Update</h2>
+  </div>
+  <div class="mdl-card__supporting-text">
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+    Aenan convallis.
+  </div>
+  <div class="mdl-card__actions mdl-card--border">
+    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect">
+      View Updates
+    </a>
+  </div>
+</div>
+ -->
+</body>
+
+<script>
+
+function draw(expand) { 
+
+  var NO_LINK = 'NO_LINK';
+
+  if (expand == '') {
+    return true;
+  }
+
+  var projects = [
+    {
+      name: 'College Projects',
+      desc: 'Ton of stuff completed in college.',
+      img : 'static/img/projects/iiita.png',
+      link: '',
+      expand: 'college',
+      target: ''
+    },
+    {
+      name: 'Prayaas',
+      desc: 'Website for local NGO.',
+      img : 'static/img/projects/prayaas.png',
+      link: 'https://prayaas.iiita.ac.in',
+      expand: '',
+      target: ''
+    },
+    {
+      name: 'Chrome Extensions',
+      desc: 'Simple yet useful.',
+      img : 'static/img/projects/chrome.svg',
+      link: '',
+      expand: 'extensions',
+      target: ''
+    },
+    {
+      name: 'Amazon Updates',
+      desc: 'Never miss the lowest price on Amazon again.',
+      img : 'static/img/projects/amazon.png',
+      link: 'https://github.com/aedorado/amazon-updates',
+      expand: '',
+      target: ''
+    },
+    {
+      name: 'D3-visuals',
+      desc: 'Interactive charts using d3.js',
+      img : 'static/img/projects/d3.png',
+      link: '',
+      expand: 'd3',
+      target: ''
+    },
+//     {
+//       name: 'Min',
+//       desc: 'Multiplayer Game using socket.io',
+//       img : 'static/img/projects/min.png',
+//       link: 'http://23-aedorado.rhcloud.com',
+//       expand: '',
+//       target: ''
+//     },
+    {
+      name: 'Simple Web Apps',
+      desc: 'Simple web applications.',
+      img : 'static/img/projects/web.png',
+      link: '',
+      expand: 'web',
+      target: ''
+    },
+    {
+      name: 'FCC-React',
+      desc: 'Reactjs projects on freecodecamp.com',
+      img : 'static/img/projects/freecode.png',
+      link: '',
+      expand: 'fcc-react',
+      target: ''
+    },
+    {
+      name: 'Phonegap Apps',
+      desc: 'Simple phonegap apps.',
+      img : 'static/img/projects/pgap.png',
+      link: '',
+      expand: 'phonegap',
+      target: ''
+    },
+    {
+      name: 'Codechef-Gitter',
+      desc: 'Save all codechef solutions to github.',
+      img : 'static/img/projects/codechef.png',
+      link: 'https://github.com/aedorado/codechef-gitter',
+      expand: '',
+      target: ''
+    },
+  ];
+
+  document.querySelector('nav a').style.display = 'none';
+
+  if (expand == 'college') {
+      var projects = [
+          {
+            name: 'Citaion Network Analysis',
+            desc: 'Microsoft Academic Research Dataset Analysis using Hadoop.',
+            img : 'static/img/projects/hadoop.png',
+            link: 'https://github.com/hadoop-cafe/mcad-citation-network',
+            expand: '',
+            target: '_blank'
+          },
+          {
+            name: 'Exam Cell @ IIITA',
+            desc: 'Exam cell software at IIIT Allahabad.',
+            img : 'static/img/projects/ec.jpg',
+            link: NO_LINK,
+            expand: '',
+            target: ''
+          },
+          {
+            name: 'MVC vs PAC Software Architechture',
+            desc: 'Coparison of MVC and PAC architechtural styles.',
+            img : 'static/img/projects/mvc.png',
+            link: 'https://github.com/aedorado/mvc-vs-pac',
+            expand: '',
+            target: '_blank'
+          },
+          {
+            name: 'Shelter Animal Outcome',
+            desc: 'Predicting fate of animals brought to animal shelter.',
+            img : 'static/img/projects/ml1.jpg',
+            link: 'https://github.com/aedorado/shelter-animal-outcome',
+            expand: '',
+            target: '_blank'
+          },
+          {
+            name: 'Sematic Product Review',
+            desc: 'Semantic analysis on amazon reviews dataset.',
+            img : 'static/img/projects/nlp.jpg',
+            link : NO_LINK,
+            expand: '',
+            target: '_blank'
+          },
+          // {
+          //   name: 'License Plate Detection',
+          //   desc: 'Extracting characters on license plates.',
+          //   img : 'static/img/projects/lpr.jpg',
+          //   link : NO_LINK,
+          //   expand: '',
+          //   target: '_blank'
+          // },
+          // {
+          //   name: 'Sybil Attack Detection in WSNs',
+          //   desc: 'A technique to detect sybil attack in WSNs.',
+          //   img : 'static/img/projects/wsn.jpg',
+          //   link : NO_LINK,
+          //   expand: '',
+          //   target: '_blank'
+          // },
+          {
+            name: 'C-proxy',
+            desc: 'HTTP proxy server in C++',
+            img : 'static/img/projects/cpp.svg',
+            link: 'https://github.com/aedorado/c-proxy',
+            expand: '',
+            target: '_blank'
+          },
+          {
+            name: 'Chat Application',
+            desc: 'Cross platform chat application in Java.',
+            img : 'static/img/projects/java.svg',
+            link: 'https://github.com/aedorado/multi-client-chat-application',
+            expand: '',
+            target: '_blank'
+          },
+          {
+            name: 'E-crop',
+            desc: '"E-Crop” is a platform by means of which government sets selling prices for groceries so as to prevent farmers from getting cheated.',
+            img : 'static/img/projects/ecrop.png',
+            link : NO_LINK,
+            target: '_blank'
+          }
+        ];
+        document.querySelector('nav a').style.display = 'block';
+  } else if (expand == 'phonegap') {
+      var projects = [
+          {
+            name: 'Square It',
+            desc: 'First person to create a square wins..',
+            img : 'static/img/projects/sqit.png',
+            link: 'projects/square-it-master/index.html',
+            expand: '',
+            target: ''
+          },
+          // {
+          //   name: 'Connect 5',
+          //   desc: 'First person to connect 5 wins.',
+          //   img : '',
+          //   link: 'https://github.com/aedorado/connect5',
+          //   expand: '',
+          //   target: '_blank'
+          // }
+        ];
+        document.querySelector('nav a').style.display = 'block';
+  } else if (expand == 'fcc-react') { 
+      var projects = [
+          {
+            name: 'Game Of Life',
+            desc: 'Game of life in reactjs.',
+            img : 'static/img/projects/gameoflife.png',
+            link: 'projects/fcc-react/game-of-life/',
+            expand: '',
+            target: ''
+          },
+          {
+            name: 'Recipie Box',
+            desc: 'Save and edit your favorite recipies.',
+            img : 'static/img/projects/recipie.png',
+            link: 'projects/fcc-react/recipie-box/',
+            expand: '',
+            target: ''
+          },
+          {
+            name: 'Leaderboard',
+            desc: 'Simple leaderboard.',
+            img : 'static/img/projects/leader.png',
+            link: 'projects/fcc-react/leaderboard/',
+            expand: '',
+            target: ''
+          },
+          {
+            name: 'Markdown Preview',
+            desc: 'Instant preview of markdown.',
+            img : 'static/img/projects/md.png',
+            link: 'projects/fcc-react/markdown-preview/',
+            expand: '',
+            target: ''
+          },
+        ];
+        document.querySelector('nav a').style.display = 'block';
+  } else if (expand == 'extensions') {
+        var projects = [
+          {
+            name: 'Exty-switchy',
+            desc: 'Easy way to enable disable chrome extensions.',
+            img : 'static/img/projects/ext-switchy.png',
+            link: 'https://chrome.google.com/webstore/detail/exty-switchy/jkeghhfibnjhcimpmhokggpfhokjeljo',
+            expand: '',
+            target: '_blank'
+          },
+          {
+            name: 'Redirecto',
+            desc: 'Redirect one webstie to another.',
+            img : 'static/img/projects/redirecto.png',
+            link: 'https://github.com/aedorado/redirecto',
+            expand: '',
+            target: '_blank'
+          }
+        ];
+        document.querySelector('nav a').style.display = 'block';
+  } else if (expand == 'web') {
+        var projects = [
+          {
+            name: 'To-do List',
+            desc: 'Simple to-do list',
+            img : 'static/img/projects/todo.png',
+            link: 'projects/vanillajs-todo/',
+            expand: '',
+            target: ''
+          },
+          {
+            name: 'Simple Text Editor',
+            desc: 'A simple text editor with a dash of fun.',
+            img : 'static/img/projects/editor.png',
+            link: 'projects/simple-text-editor/',
+            expand: '',
+            target: ''
+          },
+          {
+            name: '23',
+            desc: 'Game Theory',
+            img : 'static/img/projects/23.png',
+            link: 'projects/23-master/',
+            expand: '',
+            target: ''
+          },
+          {
+            name: 'Factors and Multiples',
+            desc: 'Know your numbers.',
+            img : 'static/img/projects/famg.png',
+            link: 'projects/factors-and-multiples-game-II-master/',
+            expand: '',
+            target: ''
+          },
+          {
+            name: 'Hangman',
+            desc: 'A classic reenacted.',
+            img : 'static/img/projects/hangman.png',
+            link: 'https://myhpapps.herokuapp.com/hangman/',
+            expand: '',
+            target: '_blank'
+          },
+          {
+            name: 'Hungerballs',
+            desc: 'Eat \'em all.',
+            img : 'static/img/projects/hungerballs.png',
+            link: 'projects/hungerballs',
+            expand: '',
+            target: ''
+          },
+          {
+            name: 'Wordmaster',
+            desc: 'Test your vocabs.',
+            img : 'static/img/projects/wordmaster.png',
+            link: 'https://myhpapps.herokuapp.com/wordmaster/',
+            expand: '',
+            target: '_blank'
+          }
+        ];
+        document.querySelector('nav a').style.display = 'block';
+  } else if (expand === "d3") {
+        var projects = [
+          {
+            name: 'Volunteer Rating',
+            desc: 'Ratings of volunteers at a local NGO.',
+            img : 'static/img/projects/d3-rating.png',
+            link: 'projects/d3-visuals/index.html',
+            expand: '',
+            target: ''
+          },
+          {
+            name: 'CF Heatmap',
+            desc: 'Heatmap of submissions on codeforces.',
+            img : 'static/img/projects/cf-heat.png',
+            link: 'projects/cf-heatmap/index.html',
+            expand: '',
+            target: ''
+          }
+        ];
+        document.querySelector('nav a').style.display = 'block';
+  }
+
+  var html = '';
+  for (var i = 0; i < projects.length; i++) {
+    html += '<div class="demo-card-square mdl-card mdl-shadow--2dp"><div class="mdl-card__title mdl-card--expand" style="background:url(\'' + projects[i].img + '\' ) 0 0 / 100% 100%;"> \
+                <h2 class="mdl-card__title-text">' + projects[i].name + '</h2> \
+              </div> \
+            <div class="mdl-card__supporting-text">' + projects[i].desc + '</div>';
+
+      if (projects[i].link != NO_LINK) {
+        html += '<div class="mdl-card__actions mdl-card--border"> \
+                <a href="' + projects[i].link + '" target="' + projects[i].target + '" onclick="return draw(\'' + projects[i].expand + '\');" class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect">View</a> \
+              </div>'
+      }
+
+      html += '</div>';
+  }
+  document.getElementById('container').innerHTML = html;
+  // console.log('drawn');
+
+
+  return false;
+}
+
+  function showTech(e) {
+    console.log(e.target);
+  }
+
+  draw();
+
+</script>
+<script src="analytics.js"></script>
+</html>
