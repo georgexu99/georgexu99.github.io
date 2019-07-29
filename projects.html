@@ -5,25 +5,25 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="description" content="A front-end template that helps you build fast, modern mobile web apps.">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
-    <title>Anurag El Dorado</title>
+    <title>George Xu</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-  <link rel="stylesheet" href="material.min.css">
+  <link rel="stylesheet" href="assets/css/material.min.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:regular,bold,italic,thin,light,bolditalic,black,medium&amp;lang=en">
  
   <style>
 
   @font-face {
     font-family: 'AaarghNormal';
-    src: url('static/font/Aaargh-webfont.woff') format('woff'),
-         url('static/font/Aaargh-webfont.ttf') format('truetype'),
-         url('static/font/Aaargh-webfont.svg') format('svg');
+    src: url('assets/fonts/Aaargh-webfont.woff') format('woff'),
+         url('assets/fonts/Aaargh-webfont.ttf') format('truetype'),
+         url('assets/fonts/Aaargh-webfont.svg') format('svg');
     font-weight: normal;
     font-style: normal;
   }
 
   body {
     /*background-color: rgb(24,24,73);*/
-    background: url('static/img/materialplanet.png') 0 0 / 175vmax 175vmax;
+    background: url('assets/imgs/materialplanet.png') 0 0 / 175vmax 175vmax;
     font-family: AaarghNormal;
     text-align: center;
   }
@@ -96,7 +96,7 @@
     <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
         <header class="custom-header mdl-layout__header mdl-layout__header--waterfall">
           <div class="mdl-layout__header-row">
-              <span class="mdl-layout-title  mdl-layout--large-screen-only">ANURAG EL DORADO</span>
+              <span class="mdl-layout-title  mdl-layout--large-screen-only">GEORGE XU</span>
               <div class="mdl-layout-spacer"></div>
               <nav class="mdl-navigation">
                   <a onclick="draw('all')"  class="mdl-button mdl-js-button mdl-button--white mdl-js-ripple-effect" style="color:white" id="github" data-upgraded=",MaterialButton,MaterialRipple" tabindex="0">&lt;&lt; ALL<span class="mdl-button__ripple-container"><span class="mdl-ripple is-animating correction-on-span"></span></span></a>
@@ -109,22 +109,6 @@
   <div id="container"></div>
 
     </div>
-<!-- 
-<div class="demo-card-square mdl-card mdl-shadow--2dp">
-  <div class="mdl-card__title mdl-card--expand">
-    <h2 class="mdl-card__title-text">Update</h2>
-  </div>
-  <div class="mdl-card__supporting-text">
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-    Aenan convallis.
-  </div>
-  <div class="mdl-card__actions mdl-card--border">
-    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect">
-      View Updates
-    </a>
-  </div>
-</div>
- -->
 </body>
 
 <script>
@@ -139,9 +123,9 @@ function draw(expand) {
 
   var projects = [
     {
-      name: 'College Projects',
-      desc: 'Ton of stuff completed in college.',
-      img : 'static/img/projects/iiita.png',
+      name: 'Hackathon Projects',
+      desc: 'Ton of stuff completed in Hackathons.',
+      img : 'assets/imgs/back.jpg',
       link: '',
       expand: 'college',
       target: ''
@@ -178,14 +162,6 @@ function draw(expand) {
       expand: 'd3',
       target: ''
     },
-//     {
-//       name: 'Min',
-//       desc: 'Multiplayer Game using socket.io',
-//       img : 'static/img/projects/min.png',
-//       link: 'http://23-aedorado.rhcloud.com',
-//       expand: '',
-//       target: ''
-//     },
     {
       name: 'Simple Web Apps',
       desc: 'Simple web applications.',
@@ -315,14 +291,6 @@ function draw(expand) {
             expand: '',
             target: ''
           },
-          // {
-          //   name: 'Connect 5',
-          //   desc: 'First person to connect 5 wins.',
-          //   img : '',
-          //   link: 'https://github.com/aedorado/connect5',
-          //   expand: '',
-          //   target: '_blank'
-          // }
         ];
         document.querySelector('nav a').style.display = 'block';
   } else if (expand == 'fcc-react') { 
