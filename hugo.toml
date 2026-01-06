@@ -1,0 +1,6 @@
+baseURL = "https://george.xuhome.casa/"
+languageCode = "en-us"
+title = "George Xu"
+
+[params]
+  description = "George Xu - Software Engineer"

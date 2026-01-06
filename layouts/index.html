@@ -1,0 +1,19 @@
+{{ define "main" }}
+<main class="wrapper">
+    <div class="inner-wrapper">
+        <div class="body-text">
+            <img class="george" src="{{ "images/georgexu.png" | relURL }}" alt="George Xu"><br>
+            <div class="name">
+                George Xu
+            </div>
+            <div class="links-section">
+                > <a href="mailto:george.xu99@gmail.com">email</a><br>
+                > <a href="https://github.com/georgexu99">github</a><br>
+                > <a href="https://linkedin.com/in/georgexu-">linkedin</a><br>
+                > <a href="{{ "resume/XuGeorgeResume.pdf" | relURL }}">resume</a><br>
+                > <a href="{{ "posts/" | relURL }}">blog</a>
+            </div>
+        </div>
+    </div>
+</main>
+{{ end }}

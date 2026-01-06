@@ -1,0 +1,31 @@
+{{ define "main" }}
+<main class="wrapper blog-wrapper">
+    <div class="inner-wrapper">
+        <div class="body-text">
+            <header class="blog-header">
+                <div class="name">
+                    <a href="{{ "/" | relURL }}">George Xu</a>
+                </div>
+                <nav class="nav-links">
+                    <a href="{{ "posts/" | relURL }}">&larr; posts</a>
+                </nav>
+            </header>
+            <article class="post">
+                <header class="post-header">
+                    <h1 class="post-title">{{ .Title }}</h1>
+                    <time class="post-date">{{ .Date.Format "January 2, 2006" }}</time>
+                </header>
+                <div class="post-content">
+                    {{ .Content }}
+                </div>
+                <div class="post-nav">
+                    <a href="{{ "posts/" | relURL }}">&larr; back to posts</a>
+                </div>
+            </article>
+            <footer class="site-footer">
+                <p>&copy; {{ now.Year }} George Xu</p>
+            </footer>
+        </div>
+    </div>
+</main>
+{{ end }}
