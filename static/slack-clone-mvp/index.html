@@ -45,7 +45,7 @@
 <body>
 <main>
   <h1>💬 Slack Clone MVP</h1>
-  <p class="lede">Public copy of the project tracker. Snapshot generated 2026-11-18 15:15 PST.</p>
+  <p class="lede">Public copy of the project tracker. Snapshot generated 2026-11-18 15:23 PST.</p>
   <p class="lede">Engineering brief, kept by the PM agent. Last updated 2026-11-18, against <code>main</code> at <code>e0e028b</code> plus uncommitted work in the shared checkout.
     Repo (private): <a href="https://github.com/georgexu99/slack-clone-mvp">georgexu99/slack-clone-mvp</a> (private repository); last push to origin was <code>e01f4c0</code>; later commits may be local only.</p>
 
@@ -152,10 +152,11 @@
     <thead><tr><th style="width:12%">Pass</th><th>Moved</th></tr></thead>
     <tbody>
       <tr><td>3:00PM</td><td>To Shipped: Activity count and mention pills, user menu, bottom-left gear opens Preferences (demo <code>563dec8</code>). Shipped to In progress: native notifications (missed toast, fallback banner). Added as Not started: profile and status editing UI (split from "profile, status, avatar"), webapp and desktop unit tests. R6-4 fix committed (<code>362097e</code>), still In progress. Counts 32/20/2 to 34/19/4.</td></tr>
+      <tr><td>3:20PM</td><td>To Shipped (verify UI pass around 15:10, QA): composer formatting, Activity feed, presence and DND, offline mode, mark unread, Add people, unit tests in all packages (backend 24, webapp 9, desktop 7), security fixes M1 to M3 and L1 to L5. Shipped to In progress: workspace switch (U21 FAIL). Not started to In progress: file uploads (<code>522707a</code>, <code>7a2266b</code>), profile and status (<code>601fee0</code>), context menu (<code>706ea06</code>). Added: search in channel as P0 (In progress); stretch group above the cut line (edit and delete, typing, workspace search, private channels; all Not started). Counts 34/19/4 to 35/16/1 plus 4 stretch.</td></tr>
     </tbody>
   </table>
 
-  <h3>Commits after the snapshot (18)</h3>
+  <h3>Commits after the snapshot (80)</h3>
   <table>
     <thead><tr><th style="width:8%">Time</th><th style="width:11%">Commit</th><th>Message</th></tr></thead>
     <tbody>
@@ -177,6 +178,68 @@
       <tr><td>14:56</td><td><code>02c2a85</code></td><td>bugbash: STATUS.md, round state</td></tr>
       <tr><td>14:56</td><td><code>c109738</code></td><td>security: status, open findings filed with owners</td></tr>
       <tr><td>14:57</td><td><code>bdd771f</code></td><td>desktop: stack fallback banners, catch banner load failure, hide window on close</td></tr>
+      <tr><td>14:58</td><td><code>07eb47d</code></td><td>qa: STATUS row for bdd771f</td></tr>
+      <tr><td>14:58</td><td><code>522707a</code></td><td>backend: file uploads (POST /api/files, fileIds on posts and replies, access-checked GET /api/files/:id)</td></tr>
+      <tr><td>14:58</td><td><code>3fea856</code></td><td>desktop: deny web permissions except clipboard write; clamp the badge (security L1)</td></tr>
+      <tr><td>14:59</td><td><code>ad8be3b</code></td><td>Root: commit yarn.lock for the current manifests; ignore agent settings, env files, databases and logs (security L5)</td></tr>
+      <tr><td>14:59</td><td><code>8a71fa0</code></td><td>qa: STATUS row for 522707a</td></tr>
+      <tr><td>14:59</td><td><code>8221eaa</code></td><td>webapp: security M3 (?api= only on localhost or in dev) and L2 (dev server serves only the package, design and shared); actions for profile, avatar, leave, channel read state</td></tr>
+      <tr><td>15:00</td><td><code>fed4603</code></td><td>shared: perf indexes for unread, mention and activity counts (0006); optional readState on create/join/dm responses and teamId on message.created</td></tr>
+      <tr><td>15:00</td><td><code>9d08636</code></td><td>gitignore: per-agent settings.local.json, env, database and log files (security L5; foundations&#x27; lines only)</td></tr>
+      <tr><td>15:00</td><td><code>9d81912</code></td><td>shared: STATUS update</td></tr>
+      <tr><td>15:00</td><td><code>6bdf6a7</code></td><td>qa: STATUS row for 8221eaa</td></tr>
+      <tr><td>15:00</td><td><code>7620e41</code></td><td>backend: socket caps and backpressure drop, per-user write rate limit (security M1, M2); STATUS and notes</td></tr>
+      <tr><td>15:01</td><td><code>79cb5de</code></td><td>desktop: move validation to its own module with unit tests</td></tr>
+      <tr><td>15:01</td><td><code>601fee0</code></td><td>webapp: profile panel, Edit profile with photo upload, Set a status; reachable from the user menu and from message authors</td></tr>
+      <tr><td>15:01</td><td><code>706ea06</code></td><td>webapp: channel right-click menu (invite, copy link, copy name, mark read or unread, leave) on sidebar rows and the channel title</td></tr>
+      <tr><td>15:01</td><td><code>90f94e2</code></td><td>qa: STATUS row for 7620e41</td></tr>
+      <tr><td>15:02</td><td><code>ad244d9</code></td><td>perf: round 5, targets re-measured on current code (1,000 sockets hold, seq clean, N1 p99 54 ms at 5 msg/s)</td></tr>
+      <tr><td>15:02</td><td><code>e3aed88</code></td><td>qa: STATUS row for 90f94e2</td></tr>
+      <tr><td>15:02</td><td><code>53e9365</code></td><td>webapp: STATUS after context menu and profile checks; screenshot</td></tr>
+      <tr><td>15:03</td><td><code>cc106d1</code></td><td>bugbash: round 7, boot rewrite matches the old counts</td></tr>
+      <tr><td>15:03</td><td><code>be0a9f5</code></td><td>qa: STATUS row for 53e9365</td></tr>
+      <tr><td>15:04</td><td><code>a70c5be</code></td><td>design: mock the remaining gaps (more menu, add people, create channel, join bar, not found, DM headers, prefs profile), toast spec, STATUS</td></tr>
+      <tr><td>15:04</td><td><code>272cd14</code></td><td>qa: COVERAGE refresh at 15:05 (53e9365), desktop unit tests included</td></tr>
+      <tr><td>15:04</td><td><code>656fbad</code></td><td>security: file upload review, M1 and M2 status, final status</td></tr>
+      <tr><td>15:04</td><td><code>7a2266b</code></td><td>webapp: file uploads from the composer (attach button, drag and drop, up to 5 files of 10 MB) and files in messages</td></tr>
+      <tr><td>15:05</td><td><code>acc80a2</code></td><td>qa: STATUS row for 7a2266b</td></tr>
+      <tr><td>15:06</td><td><code>664c8b7</code></td><td>webapp: unit tests for deep links and the store; Content-Security-Policy on the built app (security L3)</td></tr>
+      <tr><td>15:07</td><td><code>c61dcf5</code></td><td>qa: STATUS row for 664c8b7</td></tr>
+      <tr><td>15:07</td><td><code>d684e63</code></td><td>webapp: STATUS and README after profile, context menu, uploads, tests; upload screenshot</td></tr>
+      <tr><td>15:08</td><td><code>c445acb</code></td><td>qa: STATUS row for d684e63</td></tr>
+      <tr><td>15:08</td><td><code>5322b74</code></td><td>qa: treat md and png changes as docs-only</td></tr>
+      <tr><td>15:09</td><td><code>918ba6d</code></td><td>desktop: a fifth banner replaces the oldest; do not throttle the hidden main window</td></tr>
+      <tr><td>15:09</td><td><code>b503f1a</code></td><td>bugbash: round 8 desktop findings, note to desktop</td></tr>
+      <tr><td>15:09</td><td><code>e5de27f</code></td><td>webapp: correct the STATUS timestamp</td></tr>
+      <tr><td>15:10</td><td><code>d7ff383</code></td><td>webapp: rejoin loads fresh history; mark unread from the menu holds only the open channel; Escape closes the channel menu; Add people gets a search box and shows invite errors</td></tr>
+      <tr><td>15:10</td><td><code>8b81660</code></td><td>bugbash: round 8 webapp findings, note to webapp</td></tr>
+      <tr><td>15:10</td><td><code>82944fb</code></td><td>qa: STATUS row for e5de27f</td></tr>
+      <tr><td>15:10</td><td><code>fa63c23</code></td><td>perf: round 6, reconnect herd (1,000 of 1,000 recover; slow tail and stalled connects recorded)</td></tr>
+      <tr><td>15:11</td><td><code>182c138</code></td><td>verify: UI pass records native failures and fallback banners</td></tr>
+      <tr><td>15:11</td><td><code>da932d0</code></td><td>qa: STATUS row for 82944fb</td></tr>
+      <tr><td>15:12</td><td><code>58f75f8</code></td><td>backend: expose Retry-After to the webapp (CORS Access-Control-Expose-Headers)</td></tr>
+      <tr><td>15:12</td><td><code>ec086d7</code></td><td>bugbash: round 8 backend findings, STATUS, note to backend</td></tr>
+      <tr><td>15:13</td><td><code>e8a173e</code></td><td>qa: STATUS row for ec086d7</td></tr>
+      <tr><td>15:13</td><td><code>7275dee</code></td><td>docs: link the project tracker in the root README</td></tr>
+      <tr><td>15:14</td><td><code>def8533</code></td><td>qa: STATUS tracker for below-the-line features</td></tr>
+      <tr><td>15:14</td><td><code>3df2f9f</code></td><td>security: status, queued checks for search, private channels, edit and delete</td></tr>
+      <tr><td>15:14</td><td><code>888815a</code></td><td>bugbash: checks for edit/delete, typing, search, private channels</td></tr>
+      <tr><td>15:15</td><td><code>b1c2f26</code></td><td>bugbash: checks for search in channel (P0)</td></tr>
+      <tr><td>15:15</td><td><code>d068b4f</code></td><td>qa: search in channel is P0; smoke step ready (skips until the route exists); tracker reordered</td></tr>
+      <tr><td>15:15</td><td><code>d304348</code></td><td>qa: STATUS row for d068b4f</td></tr>
+      <tr><td>15:16</td><td><code>a288020</code></td><td>webapp: surface leave and copy failures, close the channel menu on workspace switch, 1 MB avatar check, Back stays disabled after a reload of the first view</td></tr>
+      <tr><td>15:16</td><td><code>0371777</code></td><td>backend: teamId on message.created, readState on create/join/dm responses, counts from denormalised activity columns</td></tr>
+      <tr><td>15:16</td><td><code>98a3c01</code></td><td>qa: STATUS row with the search-ready smoke</td></tr>
+      <tr><td>15:17</td><td><code>4202e50</code></td><td>desktop: Edit &gt; Find on Cmd+F sends find-in-channel; smoke test no longer takes focus in background mode</td></tr>
+      <tr><td>15:18</td><td><code>35a72ec</code></td><td>qa: STATUS row for 4202e50</td></tr>
+      <tr><td>15:18</td><td><code>e561213</code></td><td>backend: remove not_author mapping added ahead of the committed contract (typecheck fix)</td></tr>
+      <tr><td>15:18</td><td><code>c229180</code></td><td>design: search in channel (header button, right-panel results, states), spec and status</td></tr>
+      <tr><td>15:19</td><td><code>ec1c2b6</code></td><td>webapp: a file dropped outside the composer no longer replaces the page; activity shows the file name for files-only messages</td></tr>
+      <tr><td>15:19</td><td><code>3a097fe</code></td><td>verify: round 4, full UI pass 36/37 at 182c138, status</td></tr>
+      <tr><td>15:20</td><td><code>59dfbcb</code></td><td>qa: STATUS row for e561213</td></tr>
+      <tr><td>15:20</td><td><code>e2119b7</code></td><td>verify: fix timestamps</td></tr>
+      <tr><td>15:21</td><td><code>c2b5a5b</code></td><td>shared: search in channel (P0) contract and types; message edit and delete contract, types and migration 0007</td></tr>
+      <tr><td>15:21</td><td><code>fd06aa7</code></td><td>docs: correct the public tracker URL in the README</td></tr>
     </tbody>
   </table>
 <!--/POSTLOG-->
@@ -228,71 +291,71 @@ SLACK_CLONE_WEBAPP_URL=http://localhost:5173 yarn start</pre>
   </table>
 
   <h2>2. Feature list</h2>
-  <p><strong>Pass at 3:00PM: 34 shipped, 19 in progress, 4 not started.</strong> Timeline extended at about 2:55PM, end time to be confirmed by George; feature freeze lifted. Moved since 2:55PM: Activity count, mention pills, user menu and the bottom-left gear to Shipped (demo pass <code>563dec8</code>); native notifications back to In progress (missed toast, fallback banner); profile/status UI and webapp/desktop unit tests listed Not started; R6-4 fix committed.</p>
-  <p class="muted">Shipped = committed on main and shown working (QA <code>STATUS.md</code> row at or after the commit, verify or bugbash pass, or the 2:38PM demo copy at <code>53abd34</code>). Code existing is never enough. Webapp and desktop have no unit tests, so their QA green means typecheck and build only.</p>
+  <p><strong>Pass at 3:20PM: 35 shipped, 16 in progress, 1 not started, plus 4 stretch items not started.</strong> Moved since 3:00PM: 10 rows to Shipped from the verify UI pass (around 15:10) and QA unit tests; workspace switch back to In progress (U21 FAIL); file uploads, profile and context menu now In progress (committed, awaiting independent check); search in channel added as P0; four stretch items added above the cut line.</p>
+  <p class="muted">Shipped = committed on main and shown working (QA <code>STATUS.md</code> row at or after the commit, verify or bugbash pass, or the 2:38PM demo copy at <code>53abd34</code>). Code existing is never enough. QA now runs unit tests in all three code packages.</p>
   <table>
     <thead><tr><th style="width:6%">Tier</th><th>Feature</th><th style="width:13%">Status</th><th style="width:17%">Owner</th><th style="width:30%">Evidence or what is missing</th></tr></thead>
     <tbody>
       <tr class="group"><td colspan="5">Shipped</td></tr>
-      <tr><td><b>P0</b></td><td>One-command start (<code>yarn start</code>)</td><td><span class="pill done">Shipped</span></td><td>desktop</td><td>demo copy <code>53abd34</code> loads as Alice; verify: three processes start</td></tr>
-      <tr><td><b>P0</b></td><td>Boot (<code>/api/client/boot</code>), socket after boot</td><td><span class="pill done">Shipped</span></td><td>backend, webapp</td><td>QA smoke from <code>e23e3cd</code>; verify r3 at <code>82151bc</code>: boot renders the app</td></tr>
-      <tr><td><b>P0</b></td><td>Send and receive live with per-channel seq</td><td><span class="pill done">Shipped</span></td><td>backend, webapp</td><td>QA smoke; demo UI (Bob receives live); R5: 20 concurrent posts, no gap or duplicate</td></tr>
+      <tr><td><b>P0</b></td><td>One-command start (<code>yarn start</code>)</td><td><span class="pill done">Shipped</span></td><td>desktop</td><td>demo copy <code>53abd34</code>; verify: three processes start</td></tr>
+      <tr><td><b>P0</b></td><td>Boot, socket after boot</td><td><span class="pill done">Shipped</span></td><td>backend, webapp</td><td>QA smoke; verify r3 at <code>82151bc</code>. Verify UI pass ~15:10 U01 FAIL (items=0) while later checks passed; being looked at</td></tr>
+      <tr><td><b>P0</b></td><td>Send and receive live with per-channel seq</td><td><span class="pill done">Shipped</span></td><td>backend, webapp</td><td>QA smoke; demo UI; verify UI pass U03, U14</td></tr>
       <tr><td><b>P0</b></td><td>Idempotent sends on <code>clientMessageId</code> (server)</td><td><span class="pill done">Shipped</span></td><td>backend</td><td>QA smoke; R5; verify r3 probe</td></tr>
-      <tr><td><b>P0</b></td><td>Public channels: list, create, join</td><td><span class="pill done">Shipped</span></td><td>backend, webapp</td><td>QA smoke; backend tests 22/22</td></tr>
-      <tr><td><b>P0</b></td><td>DMs and group DMs</td><td><span class="pill done">Shipped</span></td><td>backend, webapp</td><td>QA smoke (mpdm in list); demo sidebar; API create; R5 member-set rules</td></tr>
-      <tr><td><b>P0</b></td><td>Threads</td><td><span class="pill done">Shipped</span></td><td>backend, webapp</td><td>QA smoke; demo UI</td></tr>
-      <tr><td><b>P0</b></td><td>Reactions</td><td><span class="pill done">Shipped</span></td><td>backend, webapp</td><td>QA smoke; demo UI</td></tr>
-      <tr><td><b>P0</b></td><td>Mentions with positions; <code>@everyone</code> only in general</td><td><span class="pill done">Shipped</span></td><td>backend</td><td>QA smoke; verify r3 probe</td></tr>
-      <tr><td><b>P0</b></td><td>Own actions never notify, count or unread for the author</td><td><span class="pill done">Shipped</span></td><td>backend</td><td>QA smoke; R5; verify r3 probe</td></tr>
+      <tr><td><b>P0</b></td><td>Public channels: list, create, join</td><td><span class="pill done">Shipped</span></td><td>backend, webapp</td><td>QA smoke; verify UI pass U16, U18</td></tr>
+      <tr><td><b>P0</b></td><td>DMs and group DMs</td><td><span class="pill done">Shipped</span></td><td>backend, webapp</td><td>QA smoke; verify UI pass U14, U15</td></tr>
+      <tr><td><b>P0</b></td><td>Threads</td><td><span class="pill done">Shipped</span></td><td>backend, webapp</td><td>QA smoke; verify UI pass U06</td></tr>
+      <tr><td><b>P0</b></td><td>Reactions</td><td><span class="pill done">Shipped</span></td><td>backend, webapp</td><td>QA smoke; verify UI pass U07</td></tr>
+      <tr><td><b>P0</b></td><td>Mentions with positions, pills, autocomplete; <code>@everyone</code> only in general</td><td><span class="pill done">Shipped</span></td><td>backend, webapp</td><td>QA smoke; verify UI pass U08, U09</td></tr>
+      <tr><td><b>P0</b></td><td>Composer formatting and toolbar</td><td><span class="pill done">Shipped</span></td><td>webapp</td><td>verify UI pass U04, U05</td></tr>
+      <tr><td><b>P0</b></td><td>Own actions never notify, count or unread for the author</td><td><span class="pill done">Shipped</span></td><td>backend, webapp</td><td>QA smoke; R5; verify UI pass U26</td></tr>
       <tr><td><b>P0</b></td><td>Server read state, unread and mention counts, team badge totals</td><td><span class="pill done">Shipped</span></td><td>backend</td><td>QA smoke; R5</td></tr>
-      <tr><td><b>P0</b></td><td>Unread badges: sidebar bold and counts, workspace switcher</td><td><span class="pill done">Shipped</span></td><td>webapp</td><td>verify r3 at <code>82151bc</code> (screenshot r3-host-02)</td></tr>
-      <tr><td><b>P0</b></td><td>Dock badge</td><td><span class="pill done">Shipped</span></td><td>desktop, webapp</td><td>verify r3: <code>app.dock.getBadge()</code> 1, 3, cleared, restored after restart. Tray not checked</td></tr>
-      <tr><td><b>P0</b></td><td>Notification click and <code>slack-clone://</code> links land on the exact message</td><td><span class="pill done">Shipped</span></td><td>webapp, desktop</td><td>verify r3: click and <code>open-url</code> switch workspace and highlight the message. OS scheme registration from source not verified</td></tr>
-      <tr><td><b>P0</b></td><td>Workspace switch</td><td><span class="pill done">Shipped</span></td><td>webapp</td><td>verify r3</td></tr>
-      <tr><td><b>P1</b></td><td>Activity count and mention pills</td><td><span class="pill done">Shipped</span></td><td>webapp</td><td>demo pass <code>563dec8</code></td></tr>
-      <tr><td><b>P1</b></td><td>User menu</td><td><span class="pill done">Shipped</span></td><td>webapp</td><td>demo pass <code>563dec8</code></td></tr>
-      <tr><td><b>P2</b></td><td>Preferences gear at the bottom left opens Preferences</td><td><span class="pill done">Shipped</span></td><td>webapp, design</td><td>demo pass <code>563dec8</code> (needed two clicks the first time; not reproduced by webapp)</td></tr>
-      <tr><td><b>P1</b></td><td>DND suppresses notifications, unread still counts</td><td><span class="pill done">Shipped</span></td><td>backend, webapp</td><td>verify r3</td></tr>
-      <tr><td><b>P1</b></td><td>History Back and Forward</td><td><span class="pill done">Shipped</span></td><td>webapp, desktop</td><td>verify r3 (Back not disabled on the first view)</td></tr>
+      <tr><td><b>P0</b></td><td>Unread badges: sidebar bold and counts, Dock badge follows</td><td><span class="pill done">Shipped</span></td><td>webapp, desktop</td><td>verify r3; verify UI pass U11, U12</td></tr>
+      <tr><td><b>P0</b></td><td>Notification click and <code>slack-clone://</code> links land on the exact message</td><td><span class="pill done">Shipped</span></td><td>webapp, desktop</td><td>verify UI pass U23, U24, U27, U29. OS scheme registration from source not verified</td></tr>
+      <tr><td><b>P1</b></td><td>Activity feed: mention appears with a count and opens the message</td><td><span class="pill done">Shipped</span></td><td>backend, webapp</td><td>verify UI pass U10; demo <code>563dec8</code></td></tr>
+      <tr><td><b>P1</b></td><td>Presence dots and DND (DND suppresses notifications)</td><td><span class="pill done">Shipped</span></td><td>backend, webapp</td><td>verify UI pass U20, U25</td></tr>
+      <tr><td><b>P1</b></td><td>History Back and Forward</td><td><span class="pill done">Shipped</span></td><td>webapp, desktop</td><td>verify UI pass U30</td></tr>
+      <tr><td><b>P1</b></td><td>Basic offline mode and outbox</td><td><span class="pill done">Shipped</span></td><td>webapp</td><td>verify UI pass U34 (banner reads Reconnecting)</td></tr>
       <tr><td><b>P1</b></td><td>F1 members list</td><td><span class="pill done">Shipped</span></td><td>backend</td><td>demo API</td></tr>
-      <tr><td><b>P1</b></td><td>F2 dm and mpdm mention scoping</td><td><span class="pill done">Shipped</span></td><td>backend</td><td>verify round 2 (dm); R5 (mpdm)</td></tr>
-      <tr><td><b>P1</b></td><td>macOS app menu, standard roles, menu command bridge</td><td><span class="pill done">Shipped</span></td><td>desktop</td><td>desktop smoke, all checks pass</td></tr>
-      <tr><td><b>P2</b></td><td>Preferences dialog: away, DND, notification level, sound, theme, acting-as</td><td><span class="pill done">Shipped</span></td><td>webapp</td><td>verify r3 (level dropdown clipped)</td></tr>
-      <tr><td><b>P2</b></td><td>Acting-user switch</td><td><span class="pill done">Shipped</span></td><td>webapp</td><td>verify r3: alice to bob and back, URL followed</td></tr>
-      <tr><td><b>P2</b></td><td>System messages (create, join, invite, leave)</td><td><span class="pill done">Shipped</span></td><td>backend, webapp</td><td>demo UI</td></tr>
+      <tr><td><b>P1</b></td><td>F2 dm and mpdm mention scoping</td><td><span class="pill done">Shipped</span></td><td>backend</td><td>verify round 2; R5</td></tr>
+      <tr><td><b>P1</b></td><td>macOS app menu, standard roles, menu command bridge</td><td><span class="pill done">Shipped</span></td><td>desktop</td><td>desktop smoke</td></tr>
+      <tr><td><b>P2</b></td><td>Preferences dialog from the bottom-left gear; theme saved</td><td><span class="pill done">Shipped</span></td><td>webapp</td><td>verify UI pass U31; demo <code>563dec8</code></td></tr>
+      <tr><td><b>P2</b></td><td>Acting-user switch</td><td><span class="pill done">Shipped</span></td><td>webapp</td><td>verify UI pass U33</td></tr>
+      <tr><td><b>P2</b></td><td>Mark unread from a message</td><td><span class="pill done">Shipped</span></td><td>webapp</td><td>verify UI pass U13</td></tr>
+      <tr><td><b>P2</b></td><td>Add people to a public channel</td><td><span class="pill done">Shipped</span></td><td>webapp, backend</td><td>verify UI pass U19</td></tr>
+      <tr><td><b>P2</b></td><td>System messages</td><td><span class="pill done">Shipped</span></td><td>backend, webapp</td><td>verify UI pass U17</td></tr>
+      <tr><td><b>n/a</b></td><td>Unit tests: backend 24, webapp 9, desktop 7</td><td><span class="pill done">Shipped</span></td><td>all</td><td>QA row <code>82944fb</code> onward, all passing</td></tr>
       <tr><td><b>n/a</b></td><td>Electron shell: sandboxed window, load retry, navigation lock</td><td><span class="pill done">Shipped</span></td><td>desktop</td><td>verify round 1; desktop smoke</td></tr>
       <tr><td><b>n/a</b></td><td>Contract, schema, seed, emoji set</td><td><span class="pill done">Shipped</span></td><td>foundations</td><td>typecheck; migrations run fresh and upgrading</td></tr>
       <tr><td><b>n/a</b></td><td>QA per-commit runner in a clean worktree</td><td><span class="pill done">Shipped</span></td><td>qa</td><td><code>qa/STATUS.md</code> rows</td></tr>
-      <tr><td><b>n/a</b></td><td>1,000-socket load tooling</td><td><span class="pill done">Shipped</span></td><td>verify</td><td>verify round 2: 200,000 of 200,000 frames</td></tr>
-      <tr><td><b>n/a</b></td><td>Design mockups and spec</td><td><span class="pill done">Shipped</span></td><td>design</td><td><code>design/STATUS.md</code>, screenshot script with layout checks</td></tr>
-      <tr><td><b>n/a</b></td><td>Shared tart VM leases</td><td><span class="pill done">Shipped</span></td><td>PM tooling</td><td>perf ran in a VM (<code>7bc3701</code>)</td></tr>
-      <tr><td><b>n/a</b></td><td>Security scan report</td><td><span class="pill done">Shipped</span></td><td>security</td><td><code>security/REPORT.md</code> committed</td></tr>
-      <tr><td><b>n/a</b></td><td>Root README for an outside engineer</td><td><span class="pill done">Shipped</span></td><td>desktop</td><td>committed, refreshed <code>f5a62ea</code></td></tr>
+      <tr><td><b>n/a</b></td><td>1,000-socket load tooling and reconnect herd</td><td><span class="pill done">Shipped</span></td><td>verify, perf</td><td>1,000 of 1,000 recover (perf round 6)</td></tr>
+      <tr><td><b>n/a</b></td><td>Design mockups and spec</td><td><span class="pill done">Shipped</span></td><td>design</td><td><code>design/STATUS.md</code></td></tr>
+      <tr><td><b>n/a</b></td><td>Shared tart VM leases</td><td><span class="pill done">Shipped</span></td><td>tooling</td><td>perf ran in a VM</td></tr>
+      <tr><td><b>n/a</b></td><td>Security scan; H1 to H3, M1 to M3, L1 to L5 fixed</td><td><span class="pill done">Shipped</span></td><td>security, backend, webapp, desktop</td><td><code>security/REPORT.md</code>, fix commits <code>7620e41</code>, <code>8221eaa</code>, <code>3fea856</code>, <code>664c8b7</code>, <code>ad8be3b</code></td></tr>
+      <tr><td><b>n/a</b></td><td>Root README for an outside engineer</td><td><span class="pill done">Shipped</span></td><td>desktop</td><td>committed</td></tr>
       <tr class="group"><td colspan="5">In progress</td></tr>
-      <tr><td><b>P0</b></td><td>Native notifications with workspace and message info, for every workspace</td><td><span class="pill open">In progress</span></td><td>backend, webapp, desktop</td><td>content correct in verify r3; demo <code>563dec8</code>: first of two back-to-back notifications never showed (<code>toast.html</code> load failure), and the banner looks like the shell fallback, not a native macOS notification</td></tr>
-      <tr><td><b>P0</b></td><td>Client seq dedupe and gap fill</td><td><span class="pill open">In progress</span></td><td>webapp</td><td>server proven; refill after a drop committed (<code>2931d70</code>), awaiting check</td></tr>
-      <tr><td><b>P0</b></td><td>User-group mentions reach only the channel's team</td><td><span class="pill open">In progress</span></td><td>backend</td><td>committed (<code>fa7a86d</code>), awaiting check</td></tr>
-      <tr><td><b>P0</b></td><td>Composer: formatting, emoji, autocomplete</td><td><span class="pill open">In progress</span></td><td>webapp</td><td>server emoji set too small (<code>palm_tree</code> rejected)</td></tr>
-      <tr><td><b>P0</b></td><td>Keep the socket when the window is closed (R6-6)</td><td><span class="pill open">In progress</span></td><td>desktop</td><td>open: closing the window stops notifications and freezes badges</td></tr>
-      <tr><td><b>P0</b></td><td>Background window should not mark the open channel read (R6-4)</td><td><span class="pill open">In progress</span></td><td>webapp</td><td>fix committed (<code>362097e</code>), awaiting check</td></tr>
+      <tr><td><b>P0</b></td><td>Search in channel (Cmd+F and header control, jump to message)</td><td><span class="pill open">In progress</span></td><td>backend, webapp, desktop</td><td>desktop Cmd+F committed (<code>4202e50</code>); backend route in the working tree, uncommitted; webapp not started; QA smoke step waits for the route</td></tr>
+      <tr><td><b>P0</b></td><td>Native notifications as real macOS banners</td><td><span class="pill open">In progress</span></td><td>desktop</td><td>verify UI pass U22: native delivery failed for 4 of 4, fallback banners shown; demo <code>563dec8</code>: first of two back-to-back missed (fixed in <code>bdd771f</code>, awaiting check)</td></tr>
+      <tr><td><b>P0</b></td><td>Workspace switch</td><td><span class="pill open">In progress</span></td><td>webapp</td><td>verify UI pass U21 FAIL: the other workspace's sidebar did not change (passed in verify r3)</td></tr>
+      <tr><td><b>P0</b></td><td>Keep the socket when the window is closed (R6-6)</td><td><span class="pill open">In progress</span></td><td>desktop</td><td>window hides on close (<code>bdd771f</code>), awaiting check</td></tr>
+      <tr><td><b>P0</b></td><td>Background window should not mark read (R6-4)</td><td><span class="pill open">In progress</span></td><td>webapp</td><td>fix <code>362097e</code>, awaiting check</td></tr>
+      <tr><td><b>P0</b></td><td>Client seq gap fill</td><td><span class="pill open">In progress</span></td><td>webapp</td><td>built, not run</td></tr>
       <tr><td><b>P0</b></td><td>Tray badge</td><td><span class="pill open">In progress</span></td><td>desktop</td><td>not checked</td></tr>
-      <tr><td><b>P1</b></td><td>Activity view</td><td><span class="pill open">In progress</span></td><td>webapp</td><td>count seen in verify r3; view not checked</td></tr>
-      <tr><td><b>P1</b></td><td>Presence UI</td><td><span class="pill open">In progress</span></td><td>webapp</td><td>server proven; dots not checked</td></tr>
-      <tr><td><b>P1</b></td><td>Retries with backoff, reconnect, re-boot</td><td><span class="pill open">In progress</span></td><td>webapp</td><td>built, not run (webapp STATUS)</td></tr>
-      <tr><td><b>P1</b></td><td>Basic offline mode and outbox</td><td><span class="pill open">In progress</span></td><td>webapp</td><td>owner checked in headless Chrome; awaiting independent check</td></tr>
-      <tr><td><b>P1</b></td><td>F3 team check on join and invite</td><td><span class="pill open">In progress</span></td><td>backend</td><td>verify r3 probe: invite passes; team check not singled out</td></tr>
-      <tr><td><b>P2</b></td><td>Mark unread from a message</td><td><span class="pill open">In progress</span></td><td>webapp</td><td>verify r3 FAIL (no control); added in <code>4df569b</code>, holds until revisit (<code>3f17f40</code>); committed, awaiting UI check</td></tr>
-      <tr><td><b>P2</b></td><td>Invite: Add people to a public channel</td><td><span class="pill open">In progress</span></td><td>webapp</td><td>committed (<code>4df569b</code>), awaiting UI check</td></tr>
-      <tr><td><b>P2</b></td><td>Leave channel</td><td><span class="pill open">In progress</span></td><td>backend, webapp</td><td>backend tests; UI not checked</td></tr>
-      <tr><td><b>P2</b></td><td>Channel context menu</td><td><span class="pill open">In progress</span></td><td>webapp</td><td>only Copy link and Add people</td></tr>
-      <tr><td><b>P2</b></td><td>History dropdown, recent conversations, New Message</td><td><span class="pill open">In progress</span></td><td>webapp, desktop</td><td>dropdown not tested (blocked the driver)</td></tr>
-      <tr><td><b>n/a</b></td><td>Bug bash rounds</td><td><span class="pill open">In progress</span></td><td>bugbash</td><td>round 6 open items R6-3 to R6-9</td></tr>
-      <tr><td><b>n/a</b></td><td>Session-trace export (PM, clones, subagents)</td><td><span class="pill open">In progress</span></td><td>PM</td><td>being built locally; local only for now</td></tr>
+      <tr><td><b>P1</b></td><td>Retries with backoff, reconnect</td><td><span class="pill open">In progress</span></td><td>webapp, backend</td><td>built, not run; <code>Retry-After</code> exposed (<code>58f75f8</code>)</td></tr>
+      <tr><td><b>P1</b></td><td>F3 team check on join and invite</td><td><span class="pill open">In progress</span></td><td>backend</td><td>not singled out by verify</td></tr>
+      <tr><td><b>P2</b></td><td>Profile panel, Edit profile with photo, Set a status</td><td><span class="pill open">In progress</span></td><td>webapp</td><td>committed (<code>601fee0</code>); verify UI pass U32 FAIL (not in the user menu), probably run on an older build; awaiting recheck</td></tr>
+      <tr><td><b>P2</b></td><td>Channel right-click menu (invite, copy link, copy name, mark read/unread, leave)</td><td><span class="pill open">In progress</span></td><td>webapp</td><td>committed (<code>706ea06</code>, fixes <code>d7ff383</code>, <code>a288020</code>); owner checked; verify U28 could not drive Copy link</td></tr>
+      <tr><td><b>P2</b></td><td>File uploads (attach, drag and drop, 5 files of 10 MB, member-only access)</td><td><span class="pill open">In progress</span></td><td>backend, webapp</td><td>committed (<code>522707a</code>, <code>7a2266b</code>); owner checked; drag and drop not run; independent check pending</td></tr>
+      <tr><td><b>P2</b></td><td>Leave channel</td><td><span class="pill open">In progress</span></td><td>backend, webapp</td><td>in the context menu; not independently checked</td></tr>
+      <tr><td><b>P2</b></td><td>History dropdown, recent conversations, New Message</td><td><span class="pill open">In progress</span></td><td>webapp, desktop</td><td>dropdown not tested</td></tr>
+      <tr><td><b>n/a</b></td><td>Bug bash rounds</td><td><span class="pill open">In progress</span></td><td>bugbash</td><td>rounds 7 and 8 done; open items routed</td></tr>
+      <tr><td><b>n/a</b></td><td>Session-trace export</td><td><span class="pill open">In progress</span></td><td>PM</td><td>being built locally; local only for now</td></tr>
       <tr class="group"><td colspan="5">Not started</td></tr>
-      <tr><td><b>P2</b></td><td>Profile and status editing UI (Set a status, Edit profile, avatar)</td><td><span class="pill draft">Not started</span></td><td>webapp</td><td>API proven; not in the user menu (demo <code>563dec8</code>; webapp STATUS <code>a75e199</code>)</td></tr>
-      <tr><td><b>n/a</b></td><td>Webapp and desktop unit tests</td><td><span class="pill draft">Not started</span></td><td>webapp, desktop</td><td>no test script in either package</td></tr>
-      <tr><td><b>P1</b></td><td>Presence from system idle and screen lock</td><td><span class="pill draft">Not started</span></td><td>desktop, webapp</td><td>no <code>powerMonitor</code> code</td></tr>
-      <tr><td><b>P2</b></td><td>File uploads from the composer</td><td><span class="pill draft">Not started</span></td><td>foundations, backend, webapp</td><td>contract and design only; no upload code in backend or webapp</td></tr>
+      <tr><td><b>P1</b></td><td>Presence from system idle and screen lock</td><td><span class="pill draft">Not started</span></td><td>desktop, webapp</td><td>no code</td></tr>
+      <tr class="group"><td colspan="5">Stretch (added after the original timeline, in build order)</td></tr>
+      <tr><td><b>S1</b></td><td>Message edit and delete</td><td><span class="pill draft">Not started</span></td><td>backend, webapp</td><td>not started; bugbash and security checks queued</td></tr>
+      <tr><td><b>S2</b></td><td>Typing indicators</td><td><span class="pill draft">Not started</span></td><td>backend, webapp</td><td>not started</td></tr>
+      <tr><td><b>S3</b></td><td>Workspace search</td><td><span class="pill draft">Not started</span></td><td>backend, webapp</td><td>not started</td></tr>
+      <tr><td><b>S4</b></td><td>Private channels</td><td><span class="pill draft">Not started</span></td><td>foundations, backend, webapp</td><td>not started; security checks queued</td></tr>
       <tr class="cut"><td colspan="5">Cut line: everything below is out of the MVP</td></tr>
       <tr><td class="muted">out</td><td>Auth and sign-in</td><td><span class="pill bad">Out</span></td><td colspan="2" class="muted">Acting user by header is enough for a local demo (D21).</td></tr>
       <tr><td class="muted">out</td><td>Auto-update</td><td><span class="pill bad">Out</span></td><td colspan="2" class="muted">No distribution to update (D28).</td></tr>
@@ -300,10 +363,6 @@ SLACK_CLONE_WEBAPP_URL=http://localhost:5173 yarn start</pre>
       <tr><td class="muted">out</td><td>Video chat (huddles)</td><td><span class="pill bad">Out</span></td><td colspan="2" class="muted">Excluded by George (D11).</td></tr>
       <tr><td class="muted">out</td><td>Canvases</td><td><span class="pill bad">Out</span></td><td colspan="2" class="muted">Excluded by George (D11).</td></tr>
       <tr><td class="muted">out</td><td>Popout windows</td><td><span class="pill bad">Out</span></td><td colspan="2" class="muted">Excluded by George (D11).</td></tr>
-      <tr><td class="muted">out</td><td>Search</td><td><span class="pill bad">Out</span></td><td colspan="2" class="muted">Needs an index; history scroll covers the demo.</td></tr>
-      <tr><td class="muted">out</td><td>Typing indicators</td><td><span class="pill bad">Out</span></td><td colspan="2" class="muted">Extra fan-out for little demo value.</td></tr>
-      <tr><td class="muted">out</td><td>Private channels</td><td><span class="pill bad">Out</span></td><td colspan="2" class="muted">Adds a channel type and access rules; group DMs cover small private chats.</td></tr>
-      <tr><td class="muted">out</td><td>Message edit and delete</td><td><span class="pill bad">Out</span></td><td colspan="2" class="muted">Needs edit events and activity retraction.</td></tr>
       <tr><td class="muted">out</td><td>Sharding or any scale work past 1,000 concurrent users</td><td><span class="pill bad">Out</span></td><td colspan="2" class="muted">MVP target is 1,000 (D5, D10).</td></tr>
       <tr><td class="muted">out</td><td>Deployment</td><td><span class="pill bad">Out</span></td><td colspan="2" class="muted">Local only (D8).</td></tr>
       <tr><td class="muted">out</td><td>Persistent offline cache across restarts</td><td><span class="pill bad">Out</span></td><td colspan="2" class="muted">Basic offline mode keeps only in-memory data and the outbox.</td></tr>
@@ -420,6 +479,8 @@ SLACK_CLONE_WEBAPP_URL=http://localhost:5173 yarn start</pre>
       <tr><td>R9</td><td>Reactions</td><td>Emoji reactions on messages.</td><td><span class="pill done">Agreed</span></td></tr>
       <tr><td>R10</td><td>Mentions</td><td><code>@username</code>; server resolves mentions with positions and owns the emoji list; username may not equal a group handle (D37).</td><td><span class="pill done">Agreed</span></td></tr>
       <tr><td>R11</td><td>Team mentions</td><td><code>@everyone</code> (only in <code>#general</code>, never in a DM, D35), <code>@usergroup</code>, <code>@channel</code>, <code>@here</code> (online members). No mention notifies someone who cannot read the message; in a dm or mpdm, mentions never reach people outside it.</td><td><span class="pill done">Agreed</span></td></tr>
+      <tr><td>R40</td><td>Search in channel (P0)</td><td>Cmd+F and a header control search the open channel; <code>GET /api/channels/:id/search</code>, membership-checked; selecting a result jumps to the message.</td><td><span class="pill done">Agreed</span></td></tr>
+      <tr><td>S1 to S4</td><td>Stretch</td><td>Built after search in channel while capacity allows, in this order: message edit and delete, typing indicators, workspace search, private channels. <span class="muted">Order PM-chosen.</span></td><td><span class="pill open">Stretch</span></td></tr>
       <tr><td>R39</td><td>Self mentions (P0)</td><td>A mention of yourself (<code>@alice</code> by alice) renders as a mention but creates no activity item, count, badge or notification for you; mentions by others do. <span class="muted">PM extension, not individually confirmed: the author is never a recipient of their own broadcast or group mentions, replies in their own thread or reactions on their own message, and sending never makes the channel unread for the sender.</span></td><td><span class="pill done">Agreed</span></td></tr>
       <tr><td>R12</td><td>Activity feed</td><td>Mentions of you, replies in threads you are in, reactions to your messages. <span class="muted">PM assumption, pending George.</span></td><td><span class="pill done">Agreed</span></td></tr>
       <tr><td>R13</td><td>Direct messages</td><td>One-to-one conversations, modeled as channels of type <code>dm</code>. Group DMs in R26.</td><td><span class="pill done">Agreed</span></td></tr>
@@ -451,9 +512,7 @@ SLACK_CLONE_WEBAPP_URL=http://localhost:5173 yarn start</pre>
   <table>
     <thead><tr><th style="width:5%">#</th><th style="width:13%">Area</th><th style="width:28%">Target</th><th>Measured</th><th style="width:12%">State</th></tr></thead>
     <tbody>
-      <tr><td>N1</td><td>Latency</td><td>A message reaches other connected clients in under 200 ms, locally.</td>
-          <td>5 sockets: 3 ms. 1,000 sockets: median 932 ms, p99 9.1 s, at load average 224 to 270 (machine starved by parallel agents; no verdict). Earlier: interim I3, <code>perf/results/r1-fanout-plain-1000.json</code> (uncommitted).</td>
-          <td><span class="pill wait">No verdict</span></td></tr>
+      <tr><td>N1</td><td>Latency</td><td>A message reaches other connected clients in under 200 ms, locally.</td><td>Perf round 5 (current code, 1,000 sockets, one 1,005-member channel): 5 msg/s p50 13, p99 54 ms; 20 msg/s p99 208 ms; <code>@channel</code> message p99 70 ms. Contended host, not a VM.</td><td><span class="pill done">Holds at 5 msg/s</span></td></tr>
       <tr><td>N2</td><td>Concurrency</td><td>1,000 concurrent sockets, no dropped messages.</td>
           <td>1,000 of 1,000 connected, 0 closed, 200,000 of 200,000 frames. One <code>@channel</code> gave exactly 1,004 activity rows and 999 frames. Presence on connect is quadratic: 500,500 frames for 1,000 users.</td>
           <td><span class="pill done">Holds</span></td></tr>
