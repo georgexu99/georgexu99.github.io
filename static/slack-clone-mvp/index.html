@@ -1,0 +1,631 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Slack Clone MVP: plan and tracker</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #ffffff; --fg: #1d1c1d; --muted: #616061; --line: #dddddd; --card: #f8f8f8;
+    --open: #1264a3; --wait: #b7791f; --done: #2b7a4b; --draft: #7a5af8; --bad: #c0392b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #1a1d21; --fg: #d1d2d3; --muted: #9a9b9e; --line: #35373b; --card: #222529;
+            --open: #4aa3e0; --wait: #e0a94a; --done: #5cc48a; --draft: #a594ff; --bad: #f07167; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 32px 20px 64px; background: var(--bg); color: var(--fg);
+         font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
+  main { max-width: 980px; margin: 0 auto; }
+  h1 { font-size: 26px; margin: 0 0 4px; }
+  h2 { font-size: 18px; margin: 36px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+  h3 { font-size: 15px; margin: 20px 0 6px; }
+  p.lede { color: var(--muted); margin: 0 0 16px; }
+  .banner { background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--wait);
+            border-radius: 6px; padding: 12px 16px; margin: 16px 0; }
+  .banner strong { color: var(--wait); }
+  table { width: 100%; border-collapse: collapse; margin: 8px 0; }
+  th, td { text-align: left; vertical-align: top; padding: 7px 10px; border-bottom: 1px solid var(--line); }
+  th { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); font-weight: 600; }
+  tr.group td { background: var(--card); font-weight: 600; font-size: 13px; }
+  tr.cut td { border-top: 3px dashed var(--bad); border-bottom: none; color: var(--bad); font-weight: 700;
+              text-transform: uppercase; letter-spacing: .05em; font-size: 12px; padding-top: 12px; }
+  .pill { display: inline-block; font-size: 12px; font-weight: 600; padding: 1px 8px; border-radius: 10px;
+          border: 1px solid currentColor; white-space: nowrap; }
+  .open { color: var(--open); } .wait { color: var(--wait); } .done { color: var(--done); } .draft { color: var(--draft); } .bad { color: var(--bad); }
+  .muted { color: var(--muted); }
+  code { font: 13px ui-monospace, SFMono-Regular, Menlo, monospace; background: var(--card); padding: 0 3px; border-radius: 3px; }
+  pre { background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 10px 14px; overflow-x: auto;
+        font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
+  ul { padding-left: 20px; margin: 6px 0; }
+  footer { margin-top: 40px; color: var(--muted); font-size: 13px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>💬 Slack Clone MVP</h1>
+  <p class="lede">Public copy of the project tracker. Snapshot generated 2026-11-18 15:15 PST.</p>
+  <p class="lede">Engineering brief, kept by the PM agent. Last updated 2026-11-18, against <code>main</code> at <code>e0e028b</code> plus uncommitted work in the shared checkout.
+    Repo (private): <a href="https://github.com/georgexu99/slack-clone-mvp">georgexu99/slack-clone-mvp</a> (private repository); last push to origin was <code>e01f4c0</code>; later commits may be local only.</p>
+
+  <div class="banner" style="border-left-color:var(--done)">
+    <strong style="color:var(--done)">Main is green.</strong> First fully green at <code>e23e3cd</code>, 2:37PM: typecheck of all four packages, backend tests 21/21, desktop build, API smoke. Newest QA row: <code>362097e</code> at 2:54PM, all green (backend 22/22). Main pushed to GitHub at <code>fd7464b</code> (2:47PM). Webapp and desktop have no unit tests, so green there means typecheck and build. clone-qa now fixes main directly (<code>qa fix:</code> commits). VM testing was cut at 2:34PM; the latency target is recorded as not measured.
+  </div>
+  <div class="banner">
+    <strong>Status: ten build agents running. Timeline extended at about 2:55PM, end time to be confirmed by George.</strong> The 3:22PM stop and the feature freeze are lifted. The feature list (section 2) is refreshed at each pass from QA, verify, bugbash and status files. Open demo-path problems (2:39PM list plus bugbash R6), all assigned: closing the window stops notifications and freezes badges; invite has no UI; history Back changes the URL but not the view; server emoji set too small; no file upload routes; unread badges, mark unread, acting-user switch and native notification show and click not yet checked.
+  </div>
+
+  <h2>Brief: how the app works</h2>
+  <p class="muted">Derived from the code and <code>shared/CONTRACT.md</code> at <code>7bc3701</code> plus the shared checkout at 2:30PM. Status key: <span class="pill done">Built</span> committed; <span class="pill open">Partial</span> code exists only uncommitted in the shared checkout, or one side only; <span class="pill draft">Not built</span>.
+    Update 2:46PM: the boot, seq, notify and outbox work landed in <code>91d3a73</code> (backend) and <code>7d67bd8</code> (webapp); see section 2 for what is proven.</p>
+
+  <p>Three processes on one Mac. <b>Electron main</b> (<code>desktop/</code>) owns the window, the macOS menu, the Dock and tray badge, native notifications and the <code>slack-clone://</code> link handler. It loads the webapp from a URL and talks to it only through a small preload bridge. <b>The webapp</b> (<code>webapp/</code>, React in the sandboxed renderer) owns all UI and client state: boot, the WebSocket, per-channel seq tracking, the send outbox, unread display and navigation history. <b>The backend</b> (<code>backend/</code>, one Node process) owns all data in one SQLite file and every rule: who can read what, mention resolution, seq allocation, read state, activity items and who gets notified. It holds every WebSocket in memory and fans events out directly. <code>yarn start</code> (<code>desktop/scripts/start-all.mjs</code>) starts all three.</p>
+
+  <svg viewBox="0 0 900 230" width="100%" role="img" aria-label="Electron main, webapp renderer and backend with IPC, REST and WebSocket arrows" style="max-width:900px;font:13px -apple-system,Helvetica,Arial,sans-serif">
+    <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" fill="currentColor"/></marker></defs>
+    <g fill="none" stroke="currentColor" stroke-width="1.5">
+      <rect x="10" y="20" width="250" height="190" rx="8"/><rect x="330" y="20" width="250" height="190" rx="8"/><rect x="650" y="20" width="240" height="190" rx="8"/>
+      <line x1="262" y1="95" x2="328" y2="95" marker-start="url(#ar)" marker-end="url(#ar)"/>
+      <line x1="582" y1="80" x2="648" y2="80" marker-end="url(#ar)"/>
+      <line x1="648" y1="130" x2="582" y2="130" marker-end="url(#ar)"/>
+    </g>
+    <g fill="currentColor">
+      <text x="25" y="45" font-weight="700">Electron main (desktop/)</text>
+      <text x="25" y="70">Window, loads webapp URL</text><text x="25" y="90">macOS menu, History</text><text x="25" y="110">Dock and tray badge</text><text x="25" y="130">Native notifications</text><text x="25" y="150">slack-clone:// handler</text>
+      <text x="345" y="45" font-weight="700">Webapp renderer (webapp/)</text>
+      <text x="345" y="70">React UI, client state</text><text x="345" y="90">Boot, then WebSocket</text><text x="345" y="110">Seq dedupe, gap fill</text><text x="345" y="130">Outbox, retries, backoff</text><text x="345" y="150">History API navigation</text>
+      <text x="665" y="45" font-weight="700">Backend (backend/)</text>
+      <text x="665" y="70">Node, port 4000</text><text x="665" y="90">REST rules, seq, mentions</text><text x="665" y="110">Notify decision, activity</text><text x="665" y="130">In-process WS fan-out</text><text x="665" y="150">SQLite file (WAL)</text>
+      <text x="268" y="85" font-size="11">IPC bridge</text><text x="262" y="115" font-size="11">window.desktop</text><text x="262" y="128" font-size="11">menu:command</text>
+      <text x="590" y="72" font-size="11">REST /api</text><text x="590" y="150" font-size="11">WS /ws events</text>
+    </g>
+  </svg>
+
+  <h3>(a) App start</h3>
+  <table><thead><tr><th style="width:4%">#</th><th>Step</th><th style="width:14%">Status</th></tr></thead><tbody>
+    <tr><td>1</td><td><code>yarn start</code> spawns backend, Vite dev server and Electron; reuses any already-running server.</td><td><span class="pill done">Built</span></td></tr>
+    <tr><td>2</td><td>Electron opens one window with <code>contextIsolation</code> and <code>sandbox</code> on, and loads the webapp URL, retrying until it answers.</td><td><span class="pill done">Built</span></td></tr>
+    <tr><td>3</td><td>Webapp reads <code>?user=</code> and <code>?team=</code> from its URL and calls <code>GET /api/client/boot</code>: profile, prefs, teams with badges, channels with read state, Activity count.</td><td><span class="pill open">Partial</span> (uncommitted both sides)</td></tr>
+    <tr><td>4</td><td>Only after boot returns, it opens <code>ws://localhost:4000/ws?userId=</code>; the first frame is <code>ready</code>.</td><td><span class="pill open">Partial</span></td></tr>
+  </tbody></table>
+
+  <h3>(b) Life of a message</h3>
+  <table><thead><tr><th style="width:4%">#</th><th>Step</th><th style="width:14%">Status</th></tr></thead><tbody>
+    <tr><td>1</td><td>Composer generates a <code>clientMessageId</code>, shows the message as pending and saves it in the localStorage outbox.</td><td><span class="pill open">Partial</span></td></tr>
+    <tr><td>2</td><td><code>POST /api/channels/:id/messages</code>. A retry with the same <code>clientMessageId</code> returns the original (200) with no second fan-out.</td><td><span class="pill open">Partial</span></td></tr>
+    <tr><td>3</td><td>Backend resolves mentions against the channel's members, then in one transaction increments <code>channels.last_seq</code>, inserts the message with that <code>seq</code>, stores mentions, writes activity items and advances the sender's read cursor. Note: mention resolution runs just before the transaction, not inside it.</td><td><span class="pill open">Partial</span></td></tr>
+    <tr><td>4</td><td>Per recipient, the backend computes <code>notify</code> (skips the sender, DND on, <code>notifyOn = none</code>) and sends <code>message.created</code> in two serializations, notify true and false, from the in-memory hub.</td><td><span class="pill open">Partial</span></td></tr>
+    <tr><td>5</td><td>Receiver drops <code>seq &lt;= highest</code>, applies <code>highest + 1</code>, and on a gap fetches <code>?after=highest</code>.</td><td><span class="pill open">Partial</span></td></tr>
+    <tr><td>6</td><td>Unread: a top-level, non-system message above <code>lastReadSeq</code> bumps the channel's count; viewing the channel sends <code>PUT .../read-state</code>.</td><td><span class="pill open">Partial</span></td></tr>
+    <tr><td>7</td><td>Recipients of mentions, replies or reactions get <code>activity.created</code>.</td><td><span class="pill done">Built</span> (first contract); seq form partial</td></tr>
+    <tr><td>8</td><td>If <code>notify</code> is true, the webapp calls <code>window.desktop.showNotification</code>; main shows a native notification whose click focuses the window and navigates through the command channel.</td><td>Main: <span class="pill done">Built</span><br>Webapp: <span class="pill open">Partial</span></td></tr>
+    <tr><td>9</td><td>The webapp sums unread mentions and DMs and calls <code>setBadgeCount</code>; main sets the Dock badge and tray title.</td><td>Main: <span class="pill done">Built</span><br>Webapp: <span class="pill open">Partial</span></td></tr>
+  </tbody></table>
+
+  <h3>(c) Reconnect and offline</h3>
+  <table><thead><tr><th style="width:4%">#</th><th>Step</th><th style="width:14%">Status</th></tr></thead><tbody>
+    <tr><td>1</td><td>Socket closes or misses a pong; the title bar shows "Reconnecting". Reconnect with full-jitter backoff (500 ms base, 30 s cap, no attempt limit; close codes 4400 and 4401 stop).</td><td><span class="pill open">Partial</span></td></tr>
+    <tr><td>2</td><td>On reconnect: boot again, then gap fill each channel it holds by seq, then refetch an open thread.</td><td><span class="pill open">Partial</span></td></tr>
+    <tr><td>3</td><td>Flush the outbox in order with the original <code>clientMessageId</code>s; offline sends do not use up retry attempts.</td><td><span class="pill open">Partial</span></td></tr>
+    <tr><td>4</td><td>A distinct offline banner on <code>navigator.onLine</code> false, and disabled non-message actions offline.</td><td><span class="pill draft">Not verified</span> (only the "Reconnecting" label found)</td></tr>
+  </tbody></table>
+
+  <h3>Where to look in the code</h3>
+  <table><thead><tr><th style="width:34%">Concept</th><th>File</th></tr></thead><tbody>
+    <tr><td>One-command start</td><td><code>desktop/scripts/start-all.mjs</code></td></tr>
+    <tr><td>Window, menu, badge, notifications, deep links</td><td><code>desktop/src/main.ts</code></td></tr>
+    <tr><td>Preload bridge and its types</td><td><code>desktop/src/preload.ts</code>, <code>desktop/src/desktop-api.ts</code></td></tr>
+    <tr><td>API contract and shared types</td><td><code>shared/CONTRACT.md</code>, <code>shared/types/*.d.ts</code></td></tr>
+    <tr><td>Schema and seed</td><td><code>shared/db/migrations/*.sql</code>, <code>shared/db/seed.sql</code></td></tr>
+    <tr><td>HTTP routing, WS upgrade, CORS</td><td><code>backend/src/server.ts</code></td></tr>
+    <tr><td>All rules: seq, mentions, notify, read state, activity</td><td><code>backend/src/service.ts</code></td></tr>
+    <tr><td>Live sockets and fan-out</td><td><code>backend/src/hub.ts</code></td></tr>
+    <tr><td>Mention extraction</td><td><code>backend/src/mentions.ts</code></td></tr>
+    <tr><td>REST client, WebSocket, backoff</td><td><code>webapp/src/api/client.ts</code></td></tr>
+    <tr><td>Boot, seq dedupe, gap fill, outbox, notifications, badge</td><td><code>webapp/src/state/useSlack.ts</code></td></tr>
+    <tr><td>Client state and unread counting</td><td><code>webapp/src/state/store.ts</code></td></tr>
+    <tr><td>UI surfaces</td><td><code>webapp/src/components/</code></td></tr>
+    <tr><td>Shared test VMs</td><td><code>tools/vm/vm.sh</code>, <code>tools/vm/README.md</code></td></tr>
+  </tbody></table>
+
+  <h2>Snapshot: progress with 30 minutes left on the original timeline (frozen)</h2>
+  <p class="muted">Frozen record as of about 2:52 to 2:55PM. The original end was 3:22PM. This section does not change; later work is logged in the next section.</p>
+  <table>
+    <thead><tr><th style="width:26%">Item</th><th>State at the snapshot</th></tr></thead>
+    <tbody>
+      <tr><td>Head / last green code commit</td><td><code>563dec8</code> / <code>c5f0ebc</code>. Main last pushed to GitHub at <code>fd7464b</code> (2:47PM).</td></tr>
+      <tr><td>Counts</td><td><strong>32 shipped, 20 in progress, 2 not started</strong> (2:55PM pass)</td></tr>
+      <tr><td>QA</td><td>All green: typecheck in all four packages, backend tests 22/0, desktop and webapp build, API smoke. No webapp or desktop unit tests.</td></tr>
+      <tr><td>Shipped (32)</td><td>One-command start; boot; send and receive with seq; idempotent sends; public channels; DMs and group DMs; threads; reactions; mentions with positions and <code>@everyone</code> only in general; own actions never notify; server read state and counts; unread badges (sidebar, switcher); Dock badge; native notifications; notification click and <code>slack-clone://</code> links; workspace switch; DND suppresses notifications; History Back and Forward; F1 members list; F2 dm/mpdm mention scoping; macOS app menu and command bridge; Preferences dialog; acting-user switch; system messages; Electron shell; contract, schema and seed; QA runner; 1,000-socket load tooling; design mockups; tart VM leases; security report; root README.</td></tr>
+      <tr><td>In progress (20)</td><td>Client seq gap fill; user-group mention scoping (<code>fa7a86d</code>); composer emoji set; socket kept when the window closes (R6-6); background window marking read (R6-4); tray badge; Activity view; presence UI; retries and reconnect; offline mode; F3 team check; mark unread from a message; Add people; gear at the bottom left; leave channel; profile, status, avatar; channel context menu; history dropdown and New Message; bug bash; session-trace export.</td></tr>
+      <tr><td>Not started (2)</td><td>Presence from system idle and screen lock; file uploads.</td></tr>
+      <tr><td>Demo pass at <code>563dec8</code></td><td>Passed in the UI: load, send and receive, mention pill and Activity count, DM unread bold, count and workspace badge, Back and Forward, gear at the bottom left opens Preferences (two clicks the first time), user menu. Failed: the first of two back-to-back notifications never showed (<code>toast.html</code> load failure), and the banner looked like the shell fallback rather than a native macOS notification. Not present: profile and status editing in the user menu.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Work after the original timeline</h2>
+  <!--POSTLOG-->
+  <p>Timeline extended by George at about 2:55PM; feature freeze lifted; end time to be confirmed by George. Commits are every commit after the snapshot head <code>563dec8</code>, regenerated each pass.</p>
+  <h3>Bucket moves since the snapshot</h3>
+  <table>
+    <thead><tr><th style="width:12%">Pass</th><th>Moved</th></tr></thead>
+    <tbody>
+      <tr><td>3:00PM</td><td>To Shipped: Activity count and mention pills, user menu, bottom-left gear opens Preferences (demo <code>563dec8</code>). Shipped to In progress: native notifications (missed toast, fallback banner). Added as Not started: profile and status editing UI (split from "profile, status, avatar"), webapp and desktop unit tests. R6-4 fix committed (<code>362097e</code>), still In progress. Counts 32/20/2 to 34/19/4.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Commits after the snapshot (18)</h3>
+  <table>
+    <thead><tr><th style="width:8%">Time</th><th style="width:11%">Commit</th><th>Message</th></tr></thead>
+    <tbody>
+      <tr><td>14:50</td><td><code>2931d70</code></td><td>webapp: refill after a message dropped during gap fill; STATUS.md; offline and preferences screenshots</td></tr>
+      <tr><td>14:50</td><td><code>1fe202e</code></td><td>verify: round 3, PM checklist pass/fail at 82151bc, status</td></tr>
+      <tr><td>14:51</td><td><code>56c51b5</code></td><td>verify: note to webapp on mark unread; fix timestamps</td></tr>
+      <tr><td>14:51</td><td><code>44ece9a</code></td><td>qa: STATUS row for 1fe202e</td></tr>
+      <tr><td>14:52</td><td><code>3481736</code></td><td>webapp: README, notes for foundations, STATUS at feature freeze</td></tr>
+      <tr><td>14:52</td><td><code>08c2d17</code></td><td>security: pass 2 follow-up, status</td></tr>
+      <tr><td>14:52</td><td><code>39f24f1</code></td><td>qa: COVERAGE refresh at the 2:52PM freeze (1fe202e)</td></tr>
+      <tr><td>14:52</td><td><code>d0d0f70</code></td><td>qa: STATUS row for 39f24f1</td></tr>
+      <tr><td>14:53</td><td><code>40cb001</code></td><td>webapp: group DM picker keeps every pick; STATUS updated with thread notification, deep link and DND checks</td></tr>
+      <tr><td>14:54</td><td><code>e87261b</code></td><td>qa: STATUS row for 40cb001</td></tr>
+      <tr><td>14:54</td><td><code>362097e</code></td><td>webapp: mark the open channel read only while the window is focused</td></tr>
+      <tr><td>14:54</td><td><code>affe78d</code></td><td>qa: STATUS row for 362097e</td></tr>
+      <tr><td>14:55</td><td><code>a75e199</code></td><td>webapp: STATUS: profile editing not started; gear double-click not reproduced</td></tr>
+      <tr><td>14:56</td><td><code>71c4da3</code></td><td>qa: STATUS row for a75e199</td></tr>
+      <tr><td>14:56</td><td><code>e39d02b</code></td><td>qa: STATUS state block; timeline extended, loop continues</td></tr>
+      <tr><td>14:56</td><td><code>02c2a85</code></td><td>bugbash: STATUS.md, round state</td></tr>
+      <tr><td>14:56</td><td><code>c109738</code></td><td>security: status, open findings filed with owners</td></tr>
+      <tr><td>14:57</td><td><code>bdd771f</code></td><td>desktop: stack fallback banners, catch banner load failure, hide window on close</td></tr>
+    </tbody>
+  </table>
+<!--/POSTLOG-->
+  <h2>1. Demo</h2>
+  <h3>Run from source (macOS, Node 22.18 or newer, yarn only)</h3>
+  <pre>git clone https://github.com/georgexu99/slack-clone-mvp.git slack-clone &amp;&amp; cd slack-clone
+yarn install
+
+# terminal 1: backend on http://localhost:4000 (REST /api, WebSocket /ws); applies migrations + seed on boot
+yarn workspace @slack-clone/backend start
+
+# terminal 2: webapp on http://localhost:5173
+yarn workspace @slack-clone/webapp dev
+
+# terminal 3: Electron shell loading the webapp (retries every second until the dev server answers)
+SLACK_CLONE_WEBAPP_URL=http://localhost:5173 yarn start</pre>
+  <p class="muted">Or simply <code>yarn start</code> from the root, which runs all three.</p>
+  <table>
+    <thead><tr><th style="width:30%">Also</th><th>Command or note</th></tr></thead>
+    <tbody>
+      <tr><td>Backend tests</td><td><code>yarn workspace @slack-clone/backend test</code> (node:test, real HTTP and WebSocket on a temp WAL db); <code>yarn workspace @slack-clone/backend typecheck</code></td></tr>
+      <tr><td>Shell typecheck</td><td><code>yarn typecheck</code></td></tr>
+      <tr><td>Reset the database</td><td>Delete <code>backend/data/</code> and restart the backend (needed after pulling an in-place schema edit).</td></tr>
+      <tr><td>Two users side by side</td><td>Open <code>http://localhost:5173/?user=u_alice</code> and <code>http://localhost:5173/?user=u_bob</code> in two browser windows; <code>&amp;team=team_labs</code> picks the workspace. <code>?mock</code> runs the webapp against an in-memory mock API.</td></tr>
+      <tr><td>Backend only, with curl</td><td><code>curl -X POST localhost:4000/api/channels/ch_general/messages -H 'Content-Type: application/json' -H 'X-User-Id: u_bob' -d '{"text":"hello @alice"}'</code></td></tr>
+      <tr><td>Test in a VM</td><td>Use the shared tart VMs (<code>slack-clone-vm-1</code>, <code>slack-clone-vm-2</code>), not George's machine: <code>TASK=&lt;task&gt; tools/vm/vm.sh lease</code>, then <code>sync</code>, <code>app</code>, <code>shot</code>, <code>release</code> (<code>9965e1a</code>). The host runs only two macOS VMs at once, so while both are leased George's own VM test runs cannot boot..</td></tr>
+      <tr><td>One-command start (N3)</td><td><code>yarn start</code> now runs backend, webapp and Electron together (<code>8439758</code>).</td></tr>
+    </tbody>
+  </table>
+  <p class="muted">Seed: workspaces <code>team_default</code> (alice, bob, carol, dave, erin; <code>#general</code>, <code>#random</code>, DM alice/bob, <code>@desktop-team</code>) and <code>team_labs</code> (alice, carol, erin, frank; <code>#general</code>, <code>#experiments</code>, DM alice/frank, <code>@research</code>). No seeded messages.</p>
+
+  <h3>Demo script</h3>
+  <table>
+    <thead><tr><th style="width:4%">#</th><th>Step</th><th style="width:18%">Works today?</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Window A as alice, window B as bob (URL <code>?user=</code> or the "acting as" switcher in the sidebar user menu).</td><td><span class="pill done">Yes</span></td></tr>
+      <tr><td>2</td><td>Alice posts in <code>#general</code>; it appears in bob's window without refresh.</td><td><span class="pill done">Yes</span></td></tr>
+      <tr><td>3</td><td>Bob replies in a thread on that message; alice sees the reply count and gets a <code>reply</code> activity item.</td><td><span class="pill done">Yes</span></td></tr>
+      <tr><td>4</td><td>Bob reacts with <code>:thumbsup:</code>; alice sees the reaction and a <code>reaction</code> activity item.</td><td><span class="pill done">Yes</span></td></tr>
+      <tr><td>5</td><td>Bob posts <code>@alice look</code> while alice views <code>#random</code>: desktop notification, Activity item, badge on <code>#general</code> and the Activity tab.</td><td>Activity item: <span class="pill done">yes</span><br>Notification: <span class="pill draft">Not built yet</span><br>Badges: client-side only</td></tr>
+      <tr><td>6</td><td>Alice turns on DND; repeat step 5: no notification, Activity item still created.</td><td><span class="pill draft">Not built yet</span> (contract drafted)</td></tr>
+      <tr><td>7</td><td>Alice right-clicks a sidebar row or the channel name and picks Mark unread; channel goes bold, counts update in both her windows.</td><td><span class="pill draft">Not built yet</span> (contract drafted)</td></tr>
+      <tr><td>8</td><td>Alice switches to <code>team_labs</code> in the workspace rail; the rail badges <code>team_default</code> for unread mentions.</td><td><span class="pill done">Yes</span>, client-side counts</td></tr>
+      <tr><td>9</td><td>Alice opens a DM with bob (seeded <code>dm_alice_bob</code>), then a group DM with bob and carol.</td><td>DM: <span class="pill done">yes</span><br>Group DM: <span class="pill draft">Not built yet</span> (contract drafted)</td></tr>
+      <tr><td>10</td><td>Dock and tray show the total unread mentions and DMs.</td><td>Shell method committed; webapp wiring unverified</td></tr>
+      <tr><td>11</td><td>Bob sets a status and a profile photo; alice sees the status emoji beside bob's name.</td><td><span class="pill draft">Not built yet</span></td></tr>
+      <tr><td>12</td><td>Carol joins <code>#random</code>; a compact "carol joined" line appears in history.</td><td><span class="pill draft">Not built yet</span></td></tr>
+    </tbody>
+  </table>
+
+  <h2>2. Feature list</h2>
+  <p><strong>Pass at 3:00PM: 34 shipped, 19 in progress, 4 not started.</strong> Timeline extended at about 2:55PM, end time to be confirmed by George; feature freeze lifted. Moved since 2:55PM: Activity count, mention pills, user menu and the bottom-left gear to Shipped (demo pass <code>563dec8</code>); native notifications back to In progress (missed toast, fallback banner); profile/status UI and webapp/desktop unit tests listed Not started; R6-4 fix committed.</p>
+  <p class="muted">Shipped = committed on main and shown working (QA <code>STATUS.md</code> row at or after the commit, verify or bugbash pass, or the 2:38PM demo copy at <code>53abd34</code>). Code existing is never enough. Webapp and desktop have no unit tests, so their QA green means typecheck and build only.</p>
+  <table>
+    <thead><tr><th style="width:6%">Tier</th><th>Feature</th><th style="width:13%">Status</th><th style="width:17%">Owner</th><th style="width:30%">Evidence or what is missing</th></tr></thead>
+    <tbody>
+      <tr class="group"><td colspan="5">Shipped</td></tr>
+      <tr><td><b>P0</b></td><td>One-command start (<code>yarn start</code>)</td><td><span class="pill done">Shipped</span></td><td>desktop</td><td>demo copy <code>53abd34</code> loads as Alice; verify: three processes start</td></tr>
+      <tr><td><b>P0</b></td><td>Boot (<code>/api/client/boot</code>), socket after boot</td><td><span class="pill done">Shipped</span></td><td>backend, webapp</td><td>QA smoke from <code>e23e3cd</code>; verify r3 at <code>82151bc</code>: boot renders the app</td></tr>
+      <tr><td><b>P0</b></td><td>Send and receive live with per-channel seq</td><td><span class="pill done">Shipped</span></td><td>backend, webapp</td><td>QA smoke; demo UI (Bob receives live); R5: 20 concurrent posts, no gap or duplicate</td></tr>
+      <tr><td><b>P0</b></td><td>Idempotent sends on <code>clientMessageId</code> (server)</td><td><span class="pill done">Shipped</span></td><td>backend</td><td>QA smoke; R5; verify r3 probe</td></tr>
+      <tr><td><b>P0</b></td><td>Public channels: list, create, join</td><td><span class="pill done">Shipped</span></td><td>backend, webapp</td><td>QA smoke; backend tests 22/22</td></tr>
+      <tr><td><b>P0</b></td><td>DMs and group DMs</td><td><span class="pill done">Shipped</span></td><td>backend, webapp</td><td>QA smoke (mpdm in list); demo sidebar; API create; R5 member-set rules</td></tr>
+      <tr><td><b>P0</b></td><td>Threads</td><td><span class="pill done">Shipped</span></td><td>backend, webapp</td><td>QA smoke; demo UI</td></tr>
+      <tr><td><b>P0</b></td><td>Reactions</td><td><span class="pill done">Shipped</span></td><td>backend, webapp</td><td>QA smoke; demo UI</td></tr>
+      <tr><td><b>P0</b></td><td>Mentions with positions; <code>@everyone</code> only in general</td><td><span class="pill done">Shipped</span></td><td>backend</td><td>QA smoke; verify r3 probe</td></tr>
+      <tr><td><b>P0</b></td><td>Own actions never notify, count or unread for the author</td><td><span class="pill done">Shipped</span></td><td>backend</td><td>QA smoke; R5; verify r3 probe</td></tr>
+      <tr><td><b>P0</b></td><td>Server read state, unread and mention counts, team badge totals</td><td><span class="pill done">Shipped</span></td><td>backend</td><td>QA smoke; R5</td></tr>
+      <tr><td><b>P0</b></td><td>Unread badges: sidebar bold and counts, workspace switcher</td><td><span class="pill done">Shipped</span></td><td>webapp</td><td>verify r3 at <code>82151bc</code> (screenshot r3-host-02)</td></tr>
+      <tr><td><b>P0</b></td><td>Dock badge</td><td><span class="pill done">Shipped</span></td><td>desktop, webapp</td><td>verify r3: <code>app.dock.getBadge()</code> 1, 3, cleared, restored after restart. Tray not checked</td></tr>
+      <tr><td><b>P0</b></td><td>Notification click and <code>slack-clone://</code> links land on the exact message</td><td><span class="pill done">Shipped</span></td><td>webapp, desktop</td><td>verify r3: click and <code>open-url</code> switch workspace and highlight the message. OS scheme registration from source not verified</td></tr>
+      <tr><td><b>P0</b></td><td>Workspace switch</td><td><span class="pill done">Shipped</span></td><td>webapp</td><td>verify r3</td></tr>
+      <tr><td><b>P1</b></td><td>Activity count and mention pills</td><td><span class="pill done">Shipped</span></td><td>webapp</td><td>demo pass <code>563dec8</code></td></tr>
+      <tr><td><b>P1</b></td><td>User menu</td><td><span class="pill done">Shipped</span></td><td>webapp</td><td>demo pass <code>563dec8</code></td></tr>
+      <tr><td><b>P2</b></td><td>Preferences gear at the bottom left opens Preferences</td><td><span class="pill done">Shipped</span></td><td>webapp, design</td><td>demo pass <code>563dec8</code> (needed two clicks the first time; not reproduced by webapp)</td></tr>
+      <tr><td><b>P1</b></td><td>DND suppresses notifications, unread still counts</td><td><span class="pill done">Shipped</span></td><td>backend, webapp</td><td>verify r3</td></tr>
+      <tr><td><b>P1</b></td><td>History Back and Forward</td><td><span class="pill done">Shipped</span></td><td>webapp, desktop</td><td>verify r3 (Back not disabled on the first view)</td></tr>
+      <tr><td><b>P1</b></td><td>F1 members list</td><td><span class="pill done">Shipped</span></td><td>backend</td><td>demo API</td></tr>
+      <tr><td><b>P1</b></td><td>F2 dm and mpdm mention scoping</td><td><span class="pill done">Shipped</span></td><td>backend</td><td>verify round 2 (dm); R5 (mpdm)</td></tr>
+      <tr><td><b>P1</b></td><td>macOS app menu, standard roles, menu command bridge</td><td><span class="pill done">Shipped</span></td><td>desktop</td><td>desktop smoke, all checks pass</td></tr>
+      <tr><td><b>P2</b></td><td>Preferences dialog: away, DND, notification level, sound, theme, acting-as</td><td><span class="pill done">Shipped</span></td><td>webapp</td><td>verify r3 (level dropdown clipped)</td></tr>
+      <tr><td><b>P2</b></td><td>Acting-user switch</td><td><span class="pill done">Shipped</span></td><td>webapp</td><td>verify r3: alice to bob and back, URL followed</td></tr>
+      <tr><td><b>P2</b></td><td>System messages (create, join, invite, leave)</td><td><span class="pill done">Shipped</span></td><td>backend, webapp</td><td>demo UI</td></tr>
+      <tr><td><b>n/a</b></td><td>Electron shell: sandboxed window, load retry, navigation lock</td><td><span class="pill done">Shipped</span></td><td>desktop</td><td>verify round 1; desktop smoke</td></tr>
+      <tr><td><b>n/a</b></td><td>Contract, schema, seed, emoji set</td><td><span class="pill done">Shipped</span></td><td>foundations</td><td>typecheck; migrations run fresh and upgrading</td></tr>
+      <tr><td><b>n/a</b></td><td>QA per-commit runner in a clean worktree</td><td><span class="pill done">Shipped</span></td><td>qa</td><td><code>qa/STATUS.md</code> rows</td></tr>
+      <tr><td><b>n/a</b></td><td>1,000-socket load tooling</td><td><span class="pill done">Shipped</span></td><td>verify</td><td>verify round 2: 200,000 of 200,000 frames</td></tr>
+      <tr><td><b>n/a</b></td><td>Design mockups and spec</td><td><span class="pill done">Shipped</span></td><td>design</td><td><code>design/STATUS.md</code>, screenshot script with layout checks</td></tr>
+      <tr><td><b>n/a</b></td><td>Shared tart VM leases</td><td><span class="pill done">Shipped</span></td><td>PM tooling</td><td>perf ran in a VM (<code>7bc3701</code>)</td></tr>
+      <tr><td><b>n/a</b></td><td>Security scan report</td><td><span class="pill done">Shipped</span></td><td>security</td><td><code>security/REPORT.md</code> committed</td></tr>
+      <tr><td><b>n/a</b></td><td>Root README for an outside engineer</td><td><span class="pill done">Shipped</span></td><td>desktop</td><td>committed, refreshed <code>f5a62ea</code></td></tr>
+      <tr class="group"><td colspan="5">In progress</td></tr>
+      <tr><td><b>P0</b></td><td>Native notifications with workspace and message info, for every workspace</td><td><span class="pill open">In progress</span></td><td>backend, webapp, desktop</td><td>content correct in verify r3; demo <code>563dec8</code>: first of two back-to-back notifications never showed (<code>toast.html</code> load failure), and the banner looks like the shell fallback, not a native macOS notification</td></tr>
+      <tr><td><b>P0</b></td><td>Client seq dedupe and gap fill</td><td><span class="pill open">In progress</span></td><td>webapp</td><td>server proven; refill after a drop committed (<code>2931d70</code>), awaiting check</td></tr>
+      <tr><td><b>P0</b></td><td>User-group mentions reach only the channel's team</td><td><span class="pill open">In progress</span></td><td>backend</td><td>committed (<code>fa7a86d</code>), awaiting check</td></tr>
+      <tr><td><b>P0</b></td><td>Composer: formatting, emoji, autocomplete</td><td><span class="pill open">In progress</span></td><td>webapp</td><td>server emoji set too small (<code>palm_tree</code> rejected)</td></tr>
+      <tr><td><b>P0</b></td><td>Keep the socket when the window is closed (R6-6)</td><td><span class="pill open">In progress</span></td><td>desktop</td><td>open: closing the window stops notifications and freezes badges</td></tr>
+      <tr><td><b>P0</b></td><td>Background window should not mark the open channel read (R6-4)</td><td><span class="pill open">In progress</span></td><td>webapp</td><td>fix committed (<code>362097e</code>), awaiting check</td></tr>
+      <tr><td><b>P0</b></td><td>Tray badge</td><td><span class="pill open">In progress</span></td><td>desktop</td><td>not checked</td></tr>
+      <tr><td><b>P1</b></td><td>Activity view</td><td><span class="pill open">In progress</span></td><td>webapp</td><td>count seen in verify r3; view not checked</td></tr>
+      <tr><td><b>P1</b></td><td>Presence UI</td><td><span class="pill open">In progress</span></td><td>webapp</td><td>server proven; dots not checked</td></tr>
+      <tr><td><b>P1</b></td><td>Retries with backoff, reconnect, re-boot</td><td><span class="pill open">In progress</span></td><td>webapp</td><td>built, not run (webapp STATUS)</td></tr>
+      <tr><td><b>P1</b></td><td>Basic offline mode and outbox</td><td><span class="pill open">In progress</span></td><td>webapp</td><td>owner checked in headless Chrome; awaiting independent check</td></tr>
+      <tr><td><b>P1</b></td><td>F3 team check on join and invite</td><td><span class="pill open">In progress</span></td><td>backend</td><td>verify r3 probe: invite passes; team check not singled out</td></tr>
+      <tr><td><b>P2</b></td><td>Mark unread from a message</td><td><span class="pill open">In progress</span></td><td>webapp</td><td>verify r3 FAIL (no control); added in <code>4df569b</code>, holds until revisit (<code>3f17f40</code>); committed, awaiting UI check</td></tr>
+      <tr><td><b>P2</b></td><td>Invite: Add people to a public channel</td><td><span class="pill open">In progress</span></td><td>webapp</td><td>committed (<code>4df569b</code>), awaiting UI check</td></tr>
+      <tr><td><b>P2</b></td><td>Leave channel</td><td><span class="pill open">In progress</span></td><td>backend, webapp</td><td>backend tests; UI not checked</td></tr>
+      <tr><td><b>P2</b></td><td>Channel context menu</td><td><span class="pill open">In progress</span></td><td>webapp</td><td>only Copy link and Add people</td></tr>
+      <tr><td><b>P2</b></td><td>History dropdown, recent conversations, New Message</td><td><span class="pill open">In progress</span></td><td>webapp, desktop</td><td>dropdown not tested (blocked the driver)</td></tr>
+      <tr><td><b>n/a</b></td><td>Bug bash rounds</td><td><span class="pill open">In progress</span></td><td>bugbash</td><td>round 6 open items R6-3 to R6-9</td></tr>
+      <tr><td><b>n/a</b></td><td>Session-trace export (PM, clones, subagents)</td><td><span class="pill open">In progress</span></td><td>PM</td><td>being built locally; local only for now</td></tr>
+      <tr class="group"><td colspan="5">Not started</td></tr>
+      <tr><td><b>P2</b></td><td>Profile and status editing UI (Set a status, Edit profile, avatar)</td><td><span class="pill draft">Not started</span></td><td>webapp</td><td>API proven; not in the user menu (demo <code>563dec8</code>; webapp STATUS <code>a75e199</code>)</td></tr>
+      <tr><td><b>n/a</b></td><td>Webapp and desktop unit tests</td><td><span class="pill draft">Not started</span></td><td>webapp, desktop</td><td>no test script in either package</td></tr>
+      <tr><td><b>P1</b></td><td>Presence from system idle and screen lock</td><td><span class="pill draft">Not started</span></td><td>desktop, webapp</td><td>no <code>powerMonitor</code> code</td></tr>
+      <tr><td><b>P2</b></td><td>File uploads from the composer</td><td><span class="pill draft">Not started</span></td><td>foundations, backend, webapp</td><td>contract and design only; no upload code in backend or webapp</td></tr>
+      <tr class="cut"><td colspan="5">Cut line: everything below is out of the MVP</td></tr>
+      <tr><td class="muted">out</td><td>Auth and sign-in</td><td><span class="pill bad">Out</span></td><td colspan="2" class="muted">Acting user by header is enough for a local demo (D21).</td></tr>
+      <tr><td class="muted">out</td><td>Auto-update</td><td><span class="pill bad">Out</span></td><td colspan="2" class="muted">No distribution to update (D28).</td></tr>
+      <tr><td class="muted">out</td><td>Packaging and signing</td><td><span class="pill bad">Out</span></td><td colspan="2" class="muted">Runs from source; no MVP value (T8).</td></tr>
+      <tr><td class="muted">out</td><td>Video chat (huddles)</td><td><span class="pill bad">Out</span></td><td colspan="2" class="muted">Excluded by George (D11).</td></tr>
+      <tr><td class="muted">out</td><td>Canvases</td><td><span class="pill bad">Out</span></td><td colspan="2" class="muted">Excluded by George (D11).</td></tr>
+      <tr><td class="muted">out</td><td>Popout windows</td><td><span class="pill bad">Out</span></td><td colspan="2" class="muted">Excluded by George (D11).</td></tr>
+      <tr><td class="muted">out</td><td>Search</td><td><span class="pill bad">Out</span></td><td colspan="2" class="muted">Needs an index; history scroll covers the demo.</td></tr>
+      <tr><td class="muted">out</td><td>Typing indicators</td><td><span class="pill bad">Out</span></td><td colspan="2" class="muted">Extra fan-out for little demo value.</td></tr>
+      <tr><td class="muted">out</td><td>Private channels</td><td><span class="pill bad">Out</span></td><td colspan="2" class="muted">Adds a channel type and access rules; group DMs cover small private chats.</td></tr>
+      <tr><td class="muted">out</td><td>Message edit and delete</td><td><span class="pill bad">Out</span></td><td colspan="2" class="muted">Needs edit events and activity retraction.</td></tr>
+      <tr><td class="muted">out</td><td>Sharding or any scale work past 1,000 concurrent users</td><td><span class="pill bad">Out</span></td><td colspan="2" class="muted">MVP target is 1,000 (D5, D10).</td></tr>
+      <tr><td class="muted">out</td><td>Deployment</td><td><span class="pill bad">Out</span></td><td colspan="2" class="muted">Local only (D8).</td></tr>
+      <tr><td class="muted">out</td><td>Persistent offline cache across restarts</td><td><span class="pill bad">Out</span></td><td colspan="2" class="muted">Basic offline mode keeps only in-memory data and the outbox.</td></tr>
+      <tr><td class="muted">out</td><td>Queued non-message actions offline (reactions, mark read, prefs, profile)</td><td><span class="pill bad">Out</span></td><td colspan="2" class="muted">Disabled offline instead; ordering and conflicts not worth it for the MVP.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>3. API contracts</h2>
+  <p class="muted">Source: <code>shared/CONTRACT.md</code>, <code>shared/types/</code> and migrations <code>0001</code> to <code>0003</code>, all committed (latest <code>e5734ab</code>). Base <code>http://localhost:4000</code>, REST under <code>/api</code>, WebSocket <code>/ws?userId=</code> opened only after boot. Acting user from <code>X-User-Id</code> (default <code>u_alice</code>); <b>T</b> routes take the workspace from <code>X-Team-Id</code>. Errors are <code>{ error: { code, message, retryable } }</code>; clients retry only when <code>retryable</code> is true or on network failure, with full-jitter backoff <code>random(0, min(30 s, 500 ms * 2^attempt))</code>, max 5 attempts for sends.</p>
+
+  <h3>REST</h3>
+  <table>
+    <thead><tr><th style="width:9%">Method</th><th style="width:36%">Path</th><th style="width:4%">T</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td>GET</td><td><code>/api/client/boot</code></td><td>T</td><td>Profile with <code>dnd</code>, <code>manualAway</code>, prefs; teams with badge totals; the user's channels with <code>readState</code> (<code>latestSeq</code>, <code>lastReadSeq</code>, <code>unreadCount</code>, <code>mentionCount</code>); DM users; Activity unread count.</td></tr>
+      <tr><td>GET</td><td><code>/api/users/me</code></td><td></td><td>Acting user and teams</td></tr>
+      <tr><td>PUT</td><td><code>/api/users/me/presence</code></td><td></td><td><code>{ manualAway?, dnd? }</code></td></tr>
+      <tr><td>PATCH</td><td><code>/api/users/me/prefs</code></td><td></td><td>Partial in, full out: <code>theme</code>, <code>notifyOn</code>, <code>notificationSound</code></td></tr>
+      <tr><td>PATCH</td><td><code>/api/users/me/profile</code></td><td></td><td>Profile and status fields</td></tr>
+      <tr><td>PUT / DELETE</td><td><code>/api/users/me/avatar</code></td><td></td><td>Raw PNG or JPEG up to 1 MB (magic-byte checked)</td></tr>
+      <tr><td>GET</td><td><code>/api/avatars/:file</code></td><td></td><td>Serves server-generated avatar files only</td></tr>
+      <tr><td>GET</td><td><code>/api/users/all</code></td><td></td><td>Every user, for the "acting as" switcher</td></tr>
+      <tr><td>GET</td><td><code>/api/users/:userId</code></td><td></td><td>One user's profile</td></tr>
+      <tr><td>GET</td><td><code>/api/teams</code>, <code>/api/emoji</code></td><td></td><td>Teams with badges; server-owned emoji list</td></tr>
+      <tr><td>GET</td><td><code>/api/users</code>, <code>/api/user-groups</code></td><td>T</td><td>Team members, user groups</td></tr>
+      <tr><td>GET / POST</td><td><code>/api/channels</code></td><td>T</td><td>List public channels plus the user's dms and mpdms; create public channel</td></tr>
+      <tr><td>POST</td><td><code>/api/dms</code></td><td>T</td><td><code>{ userIds }</code>: 1 gives a dm, 2 to 8 an mpdm; idempotent on the member set</td></tr>
+      <tr><td>GET</td><td><code>/api/channels/:id/members</code></td><td></td><td>Members with presence</td></tr>
+      <tr><td>POST</td><td><code>/api/channels/:id/join</code></td><td></td><td>Join public channel (<code>403 not_in_team</code> outside the team)</td></tr>
+      <tr><td>POST</td><td><code>/api/channels/:id/members</code></td><td></td><td>Invite to a public channel</td></tr>
+      <tr><td>DELETE</td><td><code>/api/channels/:id/members/me</code></td><td></td><td>Leave (not <code>#general</code>)</td></tr>
+      <tr><td>PUT</td><td><code>/api/channels/:id/read-state</code></td><td></td><td>Mark read or unread by seq</td></tr>
+      <tr><td>GET</td><td><code>/api/channels/:id/messages</code></td><td></td><td>History by seq, <code>before</code> or <code>after</code></td></tr>
+      <tr><td>POST</td><td><code>/api/channels/:id/messages</code></td><td></td><td>Send; 201, or 200 with the original on a <code>clientMessageId</code> retry</td></tr>
+      <tr><td>GET / POST</td><td><code>/api/messages/:id/replies</code></td><td></td><td>Thread; reply (same idempotency)</td></tr>
+      <tr><td>PUT / DELETE</td><td><code>/api/messages/:id/reactions/:emoji</code></td><td></td><td>Add or remove reaction</td></tr>
+      <tr><td>GET</td><td><code>/api/activity</code></td><td>T</td><td>Activity feed</td></tr>
+      <tr><td>POST</td><td><code>/api/activity/read</code></td><td>T</td><td>Mark Activity read</td></tr>
+    </tbody>
+  </table>
+
+  <h3>WebSocket</h3>
+  <table>
+    <thead><tr><th style="width:26%">Event</th><th>Payload</th><th style="width:32%">Delivered to</th></tr></thead>
+    <tbody>
+      <tr><td><code>ping</code> / <code>active</code> (client)</td><td>none</td><td>keepalive; <code>active</code> keeps the user online, max every 30 s</td></tr>
+      <tr><td><code>ready</code></td><td><code>{ userId, connectionId }</code></td><td>connecting client</td></tr>
+      <tr><td><code>message.created</code></td><td><code>{ channelId, seq, message, notify }</code></td><td>channel members (top-level, replies, system)</td></tr>
+      <tr><td><code>reaction.added</code> / <code>.removed</code></td><td><code>{ channelId, seq, messageId, emoji, userId }</code></td><td>channel members</td></tr>
+      <tr><td><code>activity.created</code></td><td><code>{ item, notify }</code></td><td>recipient</td></tr>
+      <tr><td><code>read_state.changed</code></td><td><code>{ readState }</code></td><td>the user's connections</td></tr>
+      <tr><td><code>presence.changed</code></td><td><code>{ userId, presence, dnd }</code></td><td>users sharing a team, plus self</td></tr>
+      <tr><td><code>user.changed</code></td><td><code>{ user }</code></td><td>users sharing a team, plus self</td></tr>
+      <tr><td><code>prefs.changed</code></td><td><code>{ prefs }</code></td><td>the user's other connections</td></tr>
+      <tr><td><code>channel.created</code></td><td><code>{ channelId, seq, channel }</code></td><td>public: team; dm/mpdm: members</td></tr>
+      <tr><td><code>membership.created</code> / <code>.deleted</code></td><td><code>{ channelId, seq, membership, user }</code> / <code>{ channelId, seq, userId }</code></td><td>channel members, including the joiner or leaver</td></tr>
+      <tr><td><code>error</code></td><td><code>{ code, message, retryable }</code></td><td>offending client</td></tr>
+    </tbody>
+  </table>
+  <p class="muted">Receive rule per channel: drop <code>seq &lt;= highest</code>, apply <code>highest + 1</code>, on a gap fetch <code>?after=highest</code>. Reconnect: same backoff, no cap, reset after 10 s stable; close codes 4400 and 4401 do not reconnect; then boot and gap fill. Contract also covers offline mode, "your own actions never notify you" and permalinks.</p>
+
+  <h3>Desktop bridge (<code>window.desktop</code>)</h3>
+  <table>
+    <thead><tr><th style="width:32%">Member</th><th>Purpose</th><th style="width:16%">State</th></tr></thead>
+    <tbody>
+      <tr><td><code>platform</code>, <code>getAppVersion()</code></td><td>Platform string and app version</td><td><span class="pill done">Committed</span></td></tr>
+      <tr><td><code>setBadgeCount(count)</code></td><td>Dock and tray badge; 0 clears both</td><td><span class="pill done">Committed</span></td></tr>
+      <tr><td>Menu command channel (main to renderer), <code>canGoBack</code> / <code>canGoForward</code> (renderer to main)</td><td>One validated IPC channel with a fixed command enum; History menu enablement</td><td><span class="pill done">Committed</span> (<code>e0e028b</code>)</td></tr>
+      <tr><td><code>showNotification({ id, title, subtitle, body, silent, target })</code></td><td>Webapp calls it when <code>notify</code> is true; main shows an Electron Notification; click focuses the window and navigates via the command channel</td><td><span class="pill draft">Not built</span></td></tr>
+      <tr><td>Idle and screen lock (D39)</td><td>Shell reports system idle, lock and unlock</td><td><span class="pill draft">Agreed, pending</span></td></tr>
+    </tbody>
+  </table>
+
+  <h3>Agreed, pending in contract</h3>
+  <table>
+    <thead><tr><th style="width:26%">Item</th><th>What is agreed</th></tr></thead>
+    <tbody>
+      <tr><td>File uploads (P2)</td><td><code>POST /api/files</code>; messages carry <code>fileIds</code> on send and <code>files</code> on read; access limited to channel members. <span class="muted">Limits PM-proposed.</span></td></tr>
+      <tr><td>Deep-link URL scheme</td><td>One scheme shared by notification clicks, Copy link, pasted links and Activity items: <code>slack-clone://channel/&lt;teamId&gt;/&lt;channelId&gt;</code> (in contract), plus <code>slack-clone://message/&lt;teamId&gt;/&lt;channelId&gt;/&lt;messageId&gt;</code> (scroll and highlight) and <code>slack-clone://thread/&lt;teamId&gt;/&lt;channelId&gt;/&lt;parentId&gt;[/&lt;replyId&gt;]</code> (open panel, highlight reply). Mentions target the message or thread containing them. Desktop registers the scheme. <span class="muted">Forms beyond the channel permalink are PM-proposed.</span></td></tr>
+      <tr><td>Notification bridge and content</td><td><code>window.desktop.showNotification({ id, title, subtitle, body, silent, target })</code>, <code>target</code> = <code>{ teamId, channelId, messageId, parentId }</code>. Title: <code>#channel-name</code>, sender display name (dm) or member names (mpdm); subtitle: workspace name; body: "Sender: text" flattened to plain text and truncated; thread replies say so. Fires for all of the user's workspaces; click switches workspace if needed and lands on the exact message. <span class="muted">Format PM-proposed.</span></td></tr>
+    </tbody>
+  </table>
+
+  <h3>Data model (SQLite)</h3>
+  <table>
+    <thead><tr><th style="width:20%">Table</th><th>Key columns</th></tr></thead>
+    <tbody>
+      <tr><td><code>teams</code></td><td><code>id</code>, <code>name</code>, <code>general_channel_id</code> (FK channels, nullable at creation)</td></tr>
+      <tr><td><code>users</code></td><td><code>id</code>, <code>username</code> (unique, NOCASE), <code>display_name</code>, <code>full_name</code>, <code>title</code>, <code>pronouns</code>, <code>avatar_file</code>, <code>status_emoji</code>, <code>status_text</code>, <code>status_expires_at</code>, <code>manual_away</code>, <code>dnd</code></td></tr>
+      <tr><td><code>user_prefs</code></td><td>one row per user, typed columns for theme, notify level, notification sound</td></tr>
+      <tr><td><code>team_members</code></td><td>PK (<code>team_id</code>, <code>user_id</code>), <code>joined_at</code>, <code>activity_read_at</code></td></tr>
+      <tr><td><code>user_groups</code>, <code>user_group_members</code></td><td><code>team_id</code>, <code>handle</code> (unique per team)</td></tr>
+      <tr><td><code>channels</code></td><td><code>id</code>, <code>team_id</code>, <code>type</code> (<code>public</code> / <code>dm</code> / <code>mpdm</code>, app-validated), <code>name</code>, <code>topic</code>, <code>member_key</code> (unique per team for dm/mpdm), <code>last_seq</code></td></tr>
+      <tr><td><code>memberships</code></td><td>PK (<code>channel_id</code>, <code>user_id</code>), <code>joined_at</code>, <code>last_read_seq</code></td></tr>
+      <tr><td><code>messages</code></td><td><code>id</code>, <code>channel_id</code>, <code>user_id</code>, <code>parent_id</code>, <code>text</code>, <code>seq</code> UNIQUE(<code>channel_id</code>, <code>seq</code>), <code>client_message_id</code> UNIQUE(<code>channel_id</code>, <code>user_id</code>, <code>client_message_id</code>), <code>subtype</code>, <code>metadata</code></td></tr>
+      <tr><td><code>message_mentions</code></td><td>per occurrence with <code>start</code>, <code>length</code>, <code>kind</code>, <code>target</code></td></tr>
+      <tr><td><code>reactions</code></td><td>PK (<code>message_id</code>, <code>user_id</code>, <code>emoji</code>)</td></tr>
+      <tr><td><code>activity_items</code></td><td><code>user_id</code> (recipient), <code>kind</code>, <code>actor_id</code>, <code>message_id</code>, <code>mention_kind</code>, <code>detail</code>; fanned out at write time</td></tr>
+    </tbody>
+  </table>
+
+  <h2>4. Functional requirements</h2>
+  <table>
+    <thead><tr><th style="width:5%">#</th><th style="width:18%">Area</th><th>Requirement</th><th style="width:11%">State</th></tr></thead>
+    <tbody>
+      <tr><td>R1</td><td>Dummy user</td><td>No sign-in; the app acts as a seeded dummy user, chosen with an "acting as" switcher backed by a global user list (D41). A separate script seeds 1,000 users for load tests; the demo seed stays small (D40).</td><td><span class="pill done">Agreed</span></td></tr>
+      <tr><td>R2</td><td>Teams</td><td>Users and channels belong to a team. Extended by R19.</td><td><span class="pill done">Agreed</span></td></tr>
+      <tr><td>R3</td><td>Channel sidebar</td><td>Lists channels, DMs and group DMs; selecting one opens it.</td><td><span class="pill done">Agreed</span></td></tr>
+      <tr><td>R4</td><td>Channel creation</td><td>Users can create and join public channels.</td><td><span class="pill done">Decided</span></td></tr>
+      <tr><td>R5</td><td>Send and receive</td><td>Text messages from a composer appear for other members without refresh. Sends and replies are idempotent on a per-sender <code>clientMessageId</code> (D36).</td><td><span class="pill done">Agreed</span></td></tr>
+      <tr><td>R6</td><td>Composer</td><td>Multi-line, Enter to send, bold, italic, strikethrough, code, links, emoji, @-mention autocomplete.</td><td><span class="pill done">Agreed</span></td></tr>
+      <tr><td>R7</td><td>History</td><td>Persists across restarts; recent history on open; <code>after</code> cursor and documented resync on reconnect (D38).</td><td><span class="pill done">Agreed</span></td></tr>
+      <tr><td>R8</td><td>Threads</td><td>One level of replies.</td><td><span class="pill done">Agreed</span></td></tr>
+      <tr><td>R9</td><td>Reactions</td><td>Emoji reactions on messages.</td><td><span class="pill done">Agreed</span></td></tr>
+      <tr><td>R10</td><td>Mentions</td><td><code>@username</code>; server resolves mentions with positions and owns the emoji list; username may not equal a group handle (D37).</td><td><span class="pill done">Agreed</span></td></tr>
+      <tr><td>R11</td><td>Team mentions</td><td><code>@everyone</code> (only in <code>#general</code>, never in a DM, D35), <code>@usergroup</code>, <code>@channel</code>, <code>@here</code> (online members). No mention notifies someone who cannot read the message; in a dm or mpdm, mentions never reach people outside it.</td><td><span class="pill done">Agreed</span></td></tr>
+      <tr><td>R39</td><td>Self mentions (P0)</td><td>A mention of yourself (<code>@alice</code> by alice) renders as a mention but creates no activity item, count, badge or notification for you; mentions by others do. <span class="muted">PM extension, not individually confirmed: the author is never a recipient of their own broadcast or group mentions, replies in their own thread or reactions on their own message, and sending never makes the channel unread for the sender.</span></td><td><span class="pill done">Agreed</span></td></tr>
+      <tr><td>R12</td><td>Activity feed</td><td>Mentions of you, replies in threads you are in, reactions to your messages. <span class="muted">PM assumption, pending George.</span></td><td><span class="pill done">Agreed</span></td></tr>
+      <tr><td>R13</td><td>Direct messages</td><td>One-to-one conversations, modeled as channels of type <code>dm</code>. Group DMs in R26.</td><td><span class="pill done">Agreed</span></td></tr>
+      <tr><td>R19</td><td>Workspaces</td><td>Team = workspace. A user can be in several and switch; two are seeded. Joining or being invited to a channel requires membership of its team.</td><td><span class="pill done">Agreed</span></td></tr>
+      <tr><td>R20</td><td>Presence</td><td>Online or away: live connection plus recent activity; away when idle, disconnected or manually set. The shell reports system idle and screen lock through the bridge without touching DND or manual away (D39).</td><td><span class="pill done">Agreed</span></td></tr>
+      <tr><td>R22</td><td>Do Not Disturb</td><td>Manual toggle, optional end time, no schedules; "z" badge on the presence dot; does not change online/away. Toggle on the user's own presence and in Preferences; returned by boot.</td><td><span class="pill done">Agreed</span></td></tr>
+      <tr><td>R23</td><td>Notifications</td><td>Desktop notification for a mention of you (any kind) or a DM or group DM, unless you are viewing that conversation in a focused window, filtered by the <code>notifyOn</code> pref. DND suppresses the notification, not the activity item.</td><td><span class="pill done">Agreed</span></td></tr>
+      <tr><td>R24</td><td>Read state</td><td>Read position per channel, DM and group DM; Activity read state. Opening marks read; counts sync across the user's windows. Only top-level messages make a channel unread; thread replies arrive as activity items. "Mark unread" moves the read position to just before a message (D42).</td><td><span class="pill done">Agreed</span></td></tr>
+      <tr><td>R25</td><td>Badging</td><td>Sidebar: bold unread channels, count for mentions and DMs. Activity tab: unseen count. Workspace switcher: badge for unread mentions or DMs. Dock and tray: total across workspaces.</td><td><span class="pill done">Agreed</span></td></tr>
+      <tr><td>R26</td><td>Group DMs</td><td>Channel type <code>mpdm</code> beside <code>public</code> and <code>dm</code>. <code>POST /dms</code> takes several user ids: 1 other gives a dm, 2 to 8 others an mpdm; idempotent on the member set. Unread, badge and notification rules as for dm.</td><td><span class="pill done">Agreed</span></td></tr>
+      <tr><td>R27</td><td>Channel context menu</td><td>Right-click on the channel name in the channel header and on sidebar rows, as in Slack: Invite people to channel, Copy link, Copy name, Mark as read / Mark unread, Leave channel.</td><td><span class="pill done">Agreed</span></td></tr>
+      <tr><td>R28</td><td>Invite to channel</td><td>Public channels only, via <code>POST /channels/:id/members</code>.</td><td><span class="pill done">Agreed</span></td></tr>
+      <tr><td>R29</td><td>Leave channel</td><td>Any channel except <code>#general</code>.</td><td><span class="pill done">Agreed</span></td></tr>
+      <tr><td>R30</td><td>Boot</td><td>One boot call returns everything for first render (section 3); the WebSocket opens only after it finishes; reconnect re-boots.</td><td><span class="pill done">Agreed</span></td></tr>
+      <tr><td>R31</td><td>Ordering and gap fill</td><td>Messages ordered by per-channel <code>seq</code>; the client drops duplicates and fills gaps from history.</td><td><span class="pill done">Agreed</span></td></tr>
+      <tr><td>R32</td><td>Send failure</td><td>Retryable failures retry with backoff; after 5 attempts the message shows failed with a manual Retry.</td><td><span class="pill done">Agreed</span></td></tr>
+      <tr><td>R33</td><td>System messages</td><td>Join, leave and channel-created lines in public channel history; never notify, no activity, not unread.</td><td><span class="pill done">Agreed</span></td></tr>
+      <tr><td>R34</td><td>User prefs</td><td>Theme, <code>notifyOn</code>, notification sound, DND toggle, in a Preferences surface; synced across the user's windows. <span class="muted">Key set PM-proposed.</span></td><td><span class="pill done">Agreed</span></td></tr>
+      <tr><td>R36</td><td>Offline mode</td><td>Offline banner when the WebSocket is down or <code>navigator.onLine</code> is false; loaded data stays readable; messages composed offline go to a localStorage outbox, shown pending, flushed in order on reconnect with their original <code>clientMessageId</code>; reactions, mark read, prefs and profile edits disabled offline. Reconnect order: boot, gap fill by <code>seq</code>, flush outbox. <span class="muted">Details PM-proposed.</span></td><td><span class="pill done">Agreed</span></td></tr>
+      <tr><td>R37</td><td>Preferences</td><td>Gear in the app chrome and on the own-avatar menu, and Cmd+, open a Preferences dialog: Notifications (level, sound, DND), Themes, Profile. Changes save immediately.</td><td><span class="pill done">Agreed</span></td></tr>
+      <tr><td>R38</td><td>App menu and navigation history</td><td>Every view change is a history entry; back/forward arrows and a history dropdown in the top bar. macOS menu: App, File (New Message), Edit, View, History (Back Cmd+[, Forward Cmd+], recent conversations), Window, Help. Back/forward and standard roles are P1; recent list and New Message P2. <span class="muted">Menu contents PM-proposed.</span></td><td><span class="pill done">Agreed</span></td></tr>
+      <tr><td>R35</td><td>User profile</td><td>Profile panel, Edit profile, Set a status (emoji, text, optional expiry), avatar upload; status emoji beside names. <span class="muted">Field list PM-chosen.</span></td><td><span class="pill done">Agreed</span></td></tr>
+    </tbody>
+  </table>
+  <p class="muted">Out of scope (formerly R14 to R18, R21): see the cut line in section 2.</p>
+
+  <h2>5. Non-functional requirements</h2>
+  <p class="muted">Working targets adopted by George on 2026-11-18. Numbers below are from <code>verify/FINDINGS.md</code> round 2 (clean archive of <code>e01f4c0</code>) unless noted.</p>
+  <table>
+    <thead><tr><th style="width:5%">#</th><th style="width:13%">Area</th><th style="width:28%">Target</th><th>Measured</th><th style="width:12%">State</th></tr></thead>
+    <tbody>
+      <tr><td>N1</td><td>Latency</td><td>A message reaches other connected clients in under 200 ms, locally.</td>
+          <td>5 sockets: 3 ms. 1,000 sockets: median 932 ms, p99 9.1 s, at load average 224 to 270 (machine starved by parallel agents; no verdict). Earlier: interim I3, <code>perf/results/r1-fanout-plain-1000.json</code> (uncommitted).</td>
+          <td><span class="pill wait">No verdict</span></td></tr>
+      <tr><td>N2</td><td>Concurrency</td><td>1,000 concurrent sockets, no dropped messages.</td>
+          <td>1,000 of 1,000 connected, 0 closed, 200,000 of 200,000 frames. One <code>@channel</code> gave exactly 1,004 activity rows and 999 frames. Presence on connect is quadratic: 500,500 frames for 1,000 users.</td>
+          <td><span class="pill done">Holds</span></td></tr>
+      <tr><td>N3</td><td>Startup</td><td>One command starts backend, webapp and Electron.</td><td><code>yarn start</code> committed (<code>8439758</code>); not yet verified from a clean checkout.</td><td><span class="pill open">Built, unverified</span></td></tr>
+      <tr><td>N4</td><td>Durability</td><td>Messages survive a backend restart.</td><td>After <code>kill -9</code> and restart: same history hash, threads, reactions, activity count, manual away.</td><td><span class="pill done">Holds</span></td></tr>
+      <tr><td>N5</td><td>Delivery integrity</td><td>No duplicate or missing messages on the client after reconnects or retries (seq dedupe, gap fill, idempotent sends).</td><td>Not built. Today a retried send duplicates (verify S5).</td><td><span class="pill draft">Not met</span></td></tr>
+      <tr><td>N6</td><td>Retry behaviour</td><td>Backoff bounded by 30 s, full jitter, max 5 send attempts; WebSocket reconnect uncapped, reset after 10 s stable; non-retryable classes never retried. <span class="muted">PM defaults.</span></td><td>Not built.</td><td><span class="pill draft">Unmeasured</span></td></tr>
+    </tbody>
+  </table>
+
+  <h2>Architecture decisions</h2>
+  <p class="muted">One record per decision. "Prod" is what would change at production scale. The detailed log follows in section 6.</p>
+  <table>
+    <thead><tr><th style="width:15%">Decision</th><th style="width:17%">Context</th><th style="width:16%">Alternatives</th><th>Consequences and cost</th><th style="width:16%">Prod</th><th style="width:8%">By</th></tr></thead>
+    <tbody>
+      <tr><td>Renderer loaded from a URL behind a narrow preload bridge</td><td>Mirror Slack desktop; keep the renderer untrusted</td><td>Bundle files; <code>nodeIntegration</code></td><td><code>contextIsolation</code>, <code>sandbox</code>, sender checks in main, a fixed-enum <code>menu:command</code> channel. Each new native capability needs a typed bridge method. Needs the dev server running.</td><td>Signed app loading a hosted origin</td><td>George (D6, T1); enum George</td></tr>
+      <tr><td>Single Node process, in-process WebSocket fan-out</td><td>1,000 users, local only</td><td>Polling; separate gateway</td><td>Simple, no broker. N1 holds at 5 msg/s to 1,000 sockets and fails at 20 (perf <code>051a1c5</code>). No horizontal scale; presence connect is quadratic.</td><td>Gateway servers plus pub/sub</td><td>PM (T3)</td></tr>
+      <tr><td>SQLite as the only store</td><td>Zero setup for nine agents</td><td>Postgres, MySQL</td><td>One WAL file, single writer; seq allocation is safe because writes serialize. Durability held after <code>kill -9</code>.</td><td>Sharded MySQL (Vitess), caches</td><td>George (D19)</td></tr>
+      <tr><td>DMs and group DMs are channel types</td><td>Messages, threads, reactions, read state should share one path</td><td>Separate conversation tables</td><td>One code path; <code>member_key</code> makes find-or-create idempotent. Every channel rule needs a type check.</td><td>Same model</td><td>George (D22, R26)</td></tr>
+      <tr><td><code>teams.general_channel_id</code></td><td><code>@everyone</code>, cannot-leave and all-members rules need the general channel</td><td><code>is_general</code> flag; match by name</td><td>Exactly one per team by construction, one read. Circular FK, nullable at creation. API exposes derived <code>isGeneral</code>.</td><td>Same</td><td>George</td></tr>
+      <tr><td>Per-channel <code>seq</code>; <code>clientMessageId</code> for sends</td><td>Ordering, read cursor, dedupe and gap detection; same-millisecond ordering was undefined</td><td>(<code>created_at</code>, <code>id</code>); global sequence</td><td>One integer drives ordering, cursor and dedupe; every channel event carries it. A row update on <code>channels</code> per message. Send dedupe still needs <code>clientMessageId</code> since the client has no seq before the reply.</td><td>Seq per channel shard</td><td>George</td></tr>
+      <tr><td>Server resolves mentions and decides <code>notify</code></td><td>One place must decide who is notified</td><td>Client parsing and client-side notify</td><td>Positions in text, DND, <code>notifyOn</code> and own-action rules applied once; frames serialized twice (notify true/false). Webapp must render from server data.</td><td>Async notification service</td><td>George (D33, D37)</td></tr>
+      <tr><td>Boot, then socket; re-boot on reconnect</td><td>A consistent snapshot before deltas</td><td>Several list calls with socket in parallel</td><td>No missed-event window at start; reconnect cost is one boot plus gap fill. Boot response grows with every feature.</td><td>Edge-cached boot, lazy loading</td><td>George</td></tr>
+      <tr><td>Read state as <code>last_read_seq</code>; only top-level messages count</td><td>Cheap unread counts, mark unread</td><td>Per-message read flags; timestamps</td><td>One integer per membership. Thread replies never unread a channel; they reach people via Activity.</td><td>Same, counts cached</td><td>George (D34, D42)</td></tr>
+      <tr><td>Presence in memory, DND stored</td><td>Presence changes constantly; DND is a user choice</td><td>Persist presence</td><td>No writes per heartbeat; presence resets on restart. Broadcast to everyone sharing a team.</td><td>Presence service with subscriptions</td><td>PM default</td></tr>
+      <tr><td>No auth: <code>X-User-Id</code> header</td><td>Local demo only</td><td>Sessions, SSO</td><td>Anyone who can reach the port can act as anyone. Security findings about impersonation are expected by design; mitigations are loopback binding and origin checks. Must be replaced before any network exposure.</td><td>Real auth and tokens</td><td>George (D21)</td></tr>
+      <tr><td>One <code>slack-clone://</code> link scheme</td><td>Notification clicks, Copy link, pasted links and Activity all need to land on the same place</td><td>Per-feature routing</td><td>One parser in main and webapp. Scheme registration may be unreliable when run from source.</td><td>https permalinks plus app handoff</td><td>George; message and thread forms PM</td></tr>
+      <tr><td>Yarn workspaces monorepo, one owning agent per directory</td><td>Nine parallel agents need shared types</td><td>Separate repos</td><td>Shared types without publishing. Shared checkout: agents have stopped each other's servers, and large work sits uncommitted.</td><td>Separate repos and CI</td><td>PM (T5, D17)</td></tr>
+    </tbody>
+  </table>
+
+  <h2>6. Technical decisions</h2>
+  <p class="muted">Merges the former decisions log and tradeoffs T1 to T8. "By PM" rows are working assumptions George can overrule.</p>
+  <table>
+    <thead><tr><th style="width:9%">Ref</th><th style="width:24%">Decision</th><th style="width:22%">Alternative considered</th><th>Why, and the cost</th></tr></thead>
+    <tbody>
+      <tr class="group"><td colspan="4">Platform and stack</td></tr>
+      <tr><td>D6, D12, D14, D18</td><td>Electron shell on macOS, webapp as renderer</td><td>Web only in a browser (D7, reversed)</td><td>Same shape as Slack desktop. Cost: macOS only.</td></tr>
+      <tr><td>T1</td><td>Shell loads the webapp from a URL</td><td>Bundle webapp files in the app</td><td>Matches Slack. Cost: the web server must be running (shell now retries).</td></tr>
+      <tr><td>D8, T8, D28</td><td>Local only, run from source, no auto-update</td><td>Hosted deploy, signed installers</td><td>No distribution need. Cost: nobody can run it without the repo; menu says "Electron".</td></tr>
+      <tr><td>T2</td><td>TypeScript on Node 22, no build step for the backend</td><td>Hack, as Slack's backend</td><td>One language and shared types. Cost: not like-for-like with Slack.</td></tr>
+      <tr><td>T7</td><td>React 19 + TypeScript + Vite</td><td>Lighter framework</td><td>Same UI stack as Slack webapp.</td></tr>
+      <tr><td>T5, D17</td><td>One repo, yarn workspaces: desktop, webapp, backend, shared</td><td>Separate repos</td><td>Shared types without publishing. Cost: agents share one checkout; amend/reset can hit another agent's work (verify F11).</td></tr>
+      <tr><td>D16</td><td>Reuse Slack themes</td><td>New palette</td><td>Looks like Slack for free.</td></tr>
+      <tr class="group"><td colspan="4">Backend and data</td></tr>
+      <tr><td>T4, D19</td><td>SQLite (WAL) in one file</td><td>Postgres or MySQL</td><td>Zero setup. Cost: single writer, single host; first thing replaced past the MVP.</td></tr>
+      <tr><td>T3</td><td>WebSocket with in-process fan-out</td><td>Polling</td><td>Realtime like Slack. Cost: one process only; no horizontal scale.</td></tr>
+      <tr><td>R30</td><td>One boot call, then open the WebSocket; re-boot on reconnect</td><td>Several list calls with the socket opened in parallel</td><td>One consistent snapshot before deltas. Cost: a large response to keep in sync with every feature.</td></tr>
+      <tr><td>T6, D21</td><td>No auth; acting user from <code>X-User-Id</code>, backend bound to loopback</td><td>Password session, SSO</td><td>Fastest path to a demo. Cost: anyone on the machine can act as anyone.</td></tr>
+      <tr><td>D5, D10</td><td>Target 1,000 concurrent users</td><td>Design for scale now</td><td>Keeps it an MVP. Cost: quadratic presence fan-out accepted for now.</td></tr>
+      <tr><td>D23, D26</td><td>Team = workspace; users global, joined via <code>team_members</code></td><td>One user row per team</td><td>Multi-workspace switching with one identity. Cost: every team-scoped route needs <code>X-Team-Id</code>.</td></tr>
+      <tr><td>D22, R26</td><td>DMs and group DMs are channels (<code>dm</code>, <code>mpdm</code>)</td><td>Separate conversation tables</td><td>Messages, threads, reactions and read state reuse one path. Cost: type checks on every channel rule.</td></tr>
+      <tr><td>George</td><td>General channel is <code>teams.general_channel_id</code> (FK to channels); API exposes derived <code>isGeneral</code>. Governs <code>@everyone</code>, cannot-leave and all-members-are-in-it.</td><td>(a) <code>is_general</code> boolean on channels: light and matches Slack's channel object, but "exactly one per team" needs a partial unique index and puts a team fact on every row. (b) Match on the name "general": breaks on rename.</td><td>Invariant holds by construction; lookup is one read. Cost: circular reference between teams and channels, so the column is nullable at creation. <span class="pill done">Decided by George</span></td></tr>
+      <tr><td>George</td><td>Per-channel <code>seq</code> allocated in the insert transaction (<code>channels.last_seq</code>)</td><td>Order by (<code>created_at</code>, <code>id</code>); global sequence</td><td>One integer gives ordering, read cursor, history cursor and receive dedupe; fixes same-millisecond ordering. Cost: a row update on <code>channels</code> per message (single writer anyway).</td></tr>
+      <tr><td>George</td><td>Keep send idempotency on <code>clientMessageId</code> beside <code>seq</code></td><td>Use <code>seq</code> for both</td><td><code>seq</code> handles duplicate and missing delivery on receive; <code>clientMessageId</code> handles duplicate sends, because the client has no <code>seq</code> until the server replies.</td></tr>
+      <tr><td>George</td><td>Retry by error class with full-jitter exponential backoff; <code>retryable</code> in the error body</td><td>Fixed-interval retry; retry everything</td><td>Avoids thundering-herd reconnects and pointless retries of 4xx. Cost: client state machine for failed sends.</td></tr>
+      <tr><td>George</td><td>System messages as <code>messages.subtype</code> with a <code>seq</code></td><td>Separate events table</td><td>One timeline, one cursor. Cost: every message rule must skip system subtypes for notify, activity and unread.</td></tr>
+      <tr><td>George</td><td><code>user_prefs</code> table, one row per user, typed columns</td><td>JSON blob on <code>users</code></td><td>Typed defaults and validation; server reads <code>notify_on</code> in the notify path. Cost: a migration per new pref.</td></tr>
+      <tr><td>George</td><td>Uploads on local disk: avatar (one PNG or JPEG, 1 MB) and composer files (5 per message, 10 MB each, P2), served only to channel members</td><td>Blob storage; no general uploads (earlier decision, reversed)</td><td>No extra service. Cost: two upload paths to secure; disk grows unbounded.</td></tr>
+      <tr><td>George</td><td>Menu drives the renderer through one fixed-enum command channel, validated in preload and renderer</td><td>Arbitrary IPC or exposing <code>ipcRenderer</code></td><td>Small, auditable surface in a sandboxed renderer. Cost: each new menu action needs an enum value on both sides.</td></tr>
+      <tr><td>George</td><td>Navigation via the History API in the webapp</td><td>App-internal view state only</td><td>Back/forward, menu and dropdown share one source of truth. Cost: every view needs a URL.</td></tr>
+      <tr><td>Schema</td><td><code>channels.type</code> without CHECK; invariants in the app</td><td>CHECK constraints</td><td>SQLite cannot alter a CHECK. Cost: the db accepts bad rows (verify risk list).</td></tr>
+      <tr><td>Schema</td><td>Activity items fanned out at write time</td><td>Compute on read</td><td>Feed reads are one index scan (under 1 ms at 200k rows). Cost: <code>@channel</code> writes one row per member.</td></tr>
+      <tr><td>Schema</td><td>Live presence in memory; only <code>manual_away</code> stored</td><td>Persist presence</td><td>No writes per heartbeat. Cost: presence resets on restart.</td></tr>
+      <tr class="group"><td colspan="4">Behaviour</td></tr>
+      <tr><td>D36</td><td>Idempotent sends on per-sender <code>clientMessageId</code></td><td>Client-side dedupe</td><td>Retries cannot duplicate. Cost: a unique index and a lookup per send.</td></tr>
+      <tr><td>D37</td><td>Server resolves mentions with positions, owns emoji list</td><td>Webapp parses</td><td>One parser decides who is notified. Cost: webapp must render from server data.</td></tr>
+      <tr><td>D35</td><td><code>@everyone</code> only in <code>#general</code></td><td>Allowed anywhere</td><td>Matches Slack; nobody notified for a message they cannot read.</td></tr>
+      <tr><td>D38</td><td><code>after</code> cursor plus documented resync</td><td>Server-side event replay</td><td>Stateless server. Cost: client refetches on reconnect.</td></tr>
+      <tr><td>D33</td><td>DND suppresses notifications, not activity</td><td>Suppress both</td><td>Nothing is lost while DND is on.</td></tr>
+      <tr><td>D34, D42</td><td>Read position per channel; replies never unread a channel; manual Mark unread</td><td>Per-message read flags</td><td>One column per membership; cheap counts. Cost: thread replies only reach people via Activity.</td></tr>
+      <tr><td>D39</td><td>Presence from system idle and screen lock</td><td>Webapp input events only</td><td>Accurate away state on desktop. Cost: a bridge method per signal.</td></tr>
+      <tr><td>D40, D41</td><td>Separate 1,000-user load seed; global user list for the switcher</td><td>One big demo seed</td><td>Demo stays readable.</td></tr>
+      <tr><td>R27</td><td>Context menu actions as in Slack</td><td>Separate buttons</td><td>Familiar UX. Cost: invite and leave need new endpoints and events.</td></tr>
+      <tr class="group"><td colspan="4">Process</td></tr>
+      <tr><td>D13</td><td>Test in two shared tart VMs (<code>slack-clone-vm-1/2</code>) with a lease protocol in <code>tools/vm/</code></td><td>George's own machine</td><td>No windows or screenshots on George's desktop; leases stop collisions. Cost: two VMs for nine agents.</td></tr>
+      <tr><td>D30</td><td>Build in parallel against a moving contract</td><td>Contract first</td><td>Speed. Cost: rework as the contract settles.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>MVP vs production</h3>
+  <table>
+    <thead><tr><th style="width:18%">Concern</th><th style="width:38%">MVP</th><th>Production Slack shape</th></tr></thead>
+    <tbody>
+      <tr><td>Realtime</td><td>One Node process holds every socket; fan-out in memory</td><td>Dedicated gateway servers holding sockets, fed by a pub/sub layer</td></tr>
+      <tr><td>Storage</td><td>One SQLite file, single writer</td><td>Sharded MySQL via Vitess, plus caches</td></tr>
+      <tr><td>Fan-out</td><td>Synchronous loop over members in the request</td><td>Async job queue and pub/sub topics per channel</td></tr>
+      <tr><td>Presence</td><td>In memory, broadcast to everyone sharing a team</td><td>Separate presence service with subscriptions to visible users only</td></tr>
+      <tr><td>Auth</td><td>Header names the acting user; loopback only</td><td>Sessions, tokens, SSO</td></tr>
+      <tr><td>Files</td><td>Avatar and message files on local disk</td><td>Blob storage and CDN for all uploads</td></tr>
+      <tr><td>Search</td><td>None</td><td>Search cluster</td></tr>
+      <tr><td>Delivery</td><td>Run from source, macOS</td><td>Signed, auto-updating clients on every platform</td></tr>
+    </tbody>
+  </table>
+
+  <h2>7. Project: agents, verification, milestones, risks</h2>
+  <h3>Agents</h3>
+  <table>
+    <thead><tr><th style="width:20%">Agent</th><th style="width:8%">WS</th><th>Covers</th><th style="width:14%">Directory</th></tr></thead>
+    <tbody>
+      <tr><td><code>clone-pm</code></td><td></td><td>Scope, plan, this page</td><td class="muted">n/a</td></tr>
+      <tr><td><code>clone-design</code></td><td>W0</td><td>Mockups for every UI surface from Slack themes</td><td><code>design/</code></td></tr>
+      <tr><td><code>clone-foundations</code></td><td>W1</td><td>Contract, types, schema, seed</td><td><code>shared/</code></td></tr>
+      <tr><td><code>clone-backend</code></td><td>W2</td><td>REST, WebSocket, notify decision, read state</td><td><code>backend/</code></td></tr>
+      <tr><td><code>clone-webapp</code></td><td>W3</td><td>Renderer UI</td><td><code>webapp/</code></td></tr>
+      <tr><td><code>clone-desktop</code></td><td>W4</td><td>Electron shell, bridge, badges, one-command start</td><td>root, <code>desktop/</code></td></tr>
+      <tr><td><code>clone-verify</code></td><td>W6</td><td>Antagonistic checks of each claim; antagonistic end-to-end checks</td><td><code>verify/</code></td></tr>
+      <tr><td><code>clone-perf</code></td><td>W7</td><td>NFR measurement, query plans, load</td><td><code>perf/</code></td></tr>
+      <tr><td><code>clone-bugbash</code></td><td>W8</td><td>Bug bash per round of commits</td><td><code>bugbash/</code></td></tr>
+      <tr><td><code>clone-security</code></td><td>W9</td><td>Preliminary security scan, repros, <code>REPORT.md</code></td><td><code>security/</code></td></tr>
+      <tr><td><code>clone-qa</code></td><td>W5</td><td>Regression run per commit in a clean worktree; <code>qa/STATUS.md</code>, <code>qa/REGRESSIONS.md</code>, <code>qa/COVERAGE.md</code></td><td><code>qa/</code></td></tr>
+    </tbody>
+  </table>
+  <ul class="muted">
+    <li>Ten build clones.</li>
+    <li>Each agent commits only its own directory. Repo is private.</li>
+  </ul>
+
+  <h3>Verify findings George confirmed for fixing</h3>
+  <table>
+    <thead><tr><th style="width:8%">#</th><th style="width:30%">Fix</th><th>Where it stands</th><th style="width:13%">State</th></tr></thead>
+    <tbody>
+      <tr><td>F1</td><td>Add <code>GET /channels/:id/members</code></td><td>In contract (<code>95a7b7c</code>); round 2 B1 found 404 at <code>7d308b1</code>; route added in <code>e3c566e</code>, awaiting re-check.</td><td><span class="pill open">Fix in progress</span></td></tr>
+      <tr><td>F2</td><td>Mentions in a dm or mpdm never reach people outside it</td><td>Holds for dm in round 2; mpdm not built yet.</td><td><span class="pill open">Fix in progress</span></td></tr>
+      <tr><td>F3</td><td>Join and invite require team membership</td><td>Join refused in round 2 but with <code>404</code> instead of <code>403 not_in_team</code> (B2); <code>e3c566e</code> fixes the code; invite not built yet.</td><td><span class="pill open">Fix in progress</span></td></tr>
+    </tbody>
+  </table>
+
+  <h3>Milestones</h3>
+  <table>
+    <thead><tr><th style="width:5%">#</th><th>Milestone</th><th style="width:16%">State</th></tr></thead>
+    <tbody>
+      <tr><td>M0</td><td>Platform, hosting and scale decided</td><td><span class="pill done">Done</span></td></tr>
+      <tr><td>M1</td><td>Open requirements settled</td><td><span class="pill wait">R12 pending</span></td></tr>
+      <tr><td>M2</td><td>Contract covers all agreed items (section 3 pending lists empty)</td><td><span class="pill open">In progress</span></td></tr>
+      <tr><td>M3</td><td>Demo-ready: two users exchange messages live inside the Electron app </td><td><span class="pill open">In progress</span></td></tr>
+      <tr><td>M4</td><td>P0 and P1 committed, one-command start </td><td><span class="pill draft">Not started</span></td></tr>
+      <tr><td>M5</td><td>Project close: export the AI traces; session-trace export (PM, clones, subagents) built locally, local only for now</td><td><span class="pill draft">Not started</span></td></tr>
+    </tbody>
+  </table>
+  <h3>Schedule</h3>
+  <p>Original plan: feature freeze 2:52PM, demo-ready 3:07PM, final commits 3:22PM. Timeline extended at about 2:55PM, end time to be confirmed by George; the freeze is lifted. Demo pass at <code>563dec8</code> recorded in section 2.</p>
+  <table>
+    <thead><tr><th style="width:8%">Tier</th><th>Scope</th></tr></thead>
+    <tbody>
+      <tr><td><b>P0</b></td><td>One-command start, boot, realtime send and receive with <code>seq</code> and <code>clientMessageId</code>, public channels, dm and mpdm, threads, reactions, mentions, read state, unread, all badging (sidebar, Activity, workspace switcher, Dock and tray), native notifications with click handling and <code>slack-clone://</code> links</td></tr>
+      <tr><td><b>P1</b></td><td>Activity feed, presence and DND, retries with backoff and reconnect gap fill, basic offline mode, navigation back/forward and standard app menu roles, verify F1 to F3 fixes</td></tr>
+      <tr><td><b>P2</b></td><td>User prefs and Preferences dialog, profile and status, avatar upload, channel context menu (invite, leave), system messages, mark unread, file uploads, history dropdown and recent list, New Message</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Risks and open items</h3>
+  <table>
+    <thead><tr><th style="width:30%">Item</th><th>Detail</th></tr></thead>
+    <tbody>
+      <tr><td>Backend bugs at <code>6b59d0e</code></td><td>Mention posts 500, group DM users get 500 on channel list, <code>POST /api/dms</code> rejects <code>userIds</code>, activity mentions lack positions; fixes in progress.</td></tr>
+      <tr><td>Deep links from source</td><td>Registering the <code>slack-clone://</code> scheme may be unreliable for an unpackaged app run from source.</td></tr>
+      <tr><td>VM capacity</td><td>Two macOS VMs max on the host; both leased blocks George's own VM testing.</td></tr>
+      <tr><td><code>origin/main</code> behind local</td><td>Last confirmed push was <code>e01f4c0</code>; a fresh clone may lack later commits.</td></tr>
+      <tr><td>Uncommitted</td><td><code>perf/</code> and <code>security/</code> (including <code>REPORT.md</code>) are not committed; backend has uncommitted fixes.</td></tr>
+      <tr><td>Quadratic presence</td><td>500,500 frames to connect 1,000 users; contract-level.</td></tr>
+      <tr><td>N1 unmeasured</td><td>Every 1,000-client latency run so far was on a starved machine; redo on a quiet machine or VM.</td></tr>
+      <tr><td>Shared checkout</td><td>Agents have stopped each other's servers (verify I4) and amended across commits (F11).</td></tr>
+      <tr><td>Stale docs</td><td>Root <code>README.md</code> is being rewritten by clone-desktop. <code>tools/vm/README.md</code> exists (<code>9965e1a</code>).</td></tr>
+      <tr><td>Open decisions</td><td>R12 activity feed contents (PM assumption). PM defaults for prefs keys, profile fields, avatar limits, status expiry and retry numbers are not individually confirmed.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Process decisions</h3>
+  <p class="muted">D1 to D4: PM agent owns planning on this page. D9, D15: agents launched before full plan approval on PM recommendations. D11, D20, D24, D25, D27, D29, D32: scope and asset decisions reflected above. D43: perf and bugbash agents added. 2026-11-18 additions: group DMs, channel context menu, invite and leave, clone-security agent, shared tart VMs with leases, R4 confirmed, boot call, general channel on the team, verify F1 to F3 to be fixed, seq numbers and retry policy, system messages, user prefs, user profile, AI trace export at close, page re-aimed at engineering.</p>
+
+  <footer>Maintained by the Slack Clone PM agent.</footer>
+</main>
+</body>
+</html>
