@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>An AI agent stack</title>
+<style>
+:root{
+  --bg:#fbfaf8;--fg:#1d1c1d;--muted:#616061;--card:#fff;--line:#e2e0dc;--accent:#1264a3;
+  --slack:#f3e8f5;--slack-l:#7c3085;--orch:#fdf1d8;--orch-l:#a8690a;--runner:#e3f3ea;--runner-l:#1f7a4d;
+  --cc:#e2eefb;--cc-l:#1264a3;--mod:#fbe6e6;--mod-l:#b3323c;--out:#eeedea;--out-l:#616061;
+  --ok:#1f7a4d;--warn:#a8690a;--down:#b3323c;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#1a1d21;--fg:#e8e8e8;--muted:#a3a3a6;--card:#222529;--line:#3a3d42;--accent:#6cb4ee;
+  --slack:#3a2540;--slack-l:#d6a1de;--orch:#40321a;--orch-l:#f0bf62;--runner:#1d3a2b;--runner-l:#7fd3a6;
+  --cc:#1c3147;--cc-l:#8cc4f5;--mod:#472226;--mod-l:#f29aa2;--out:#2c2f33;--out-l:#a3a3a6;
+  --ok:#7fd3a6;--warn:#f0bf62;--down:#f29aa2;
+}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+main{max-width:1060px;margin:0 auto;padding:28px 20px 60px}
+h1{font-size:30px;margin:0 0 4px}
+h2{font-size:21px;margin:44px 0 6px;padding-top:14px;border-top:1px solid var(--line)}
+h3{font-size:15px;margin:18px 0 6px}
+p{margin:6px 0}
+.sub{color:var(--muted)}
+code{font:12.5px ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--out);padding:1px 5px;border-radius:4px}
+a{color:var(--accent)}
+nav{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 8px}
+nav a{font-size:13px;text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:3px 11px;background:var(--card)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:16px 0}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.tile b{display:block;font-size:24px;line-height:1.2}
+.tile span{font-size:12.5px;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;margin:10px 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.card h3{margin-top:0}
+.card ul{margin:4px 0;padding-left:18px}
+.card li{margin:3px 0}
+table{border-collapse:collapse;width:100%;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:14px;margin:10px 0}
+th,td{text-align:left;padding:7px 11px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+tr:last-child td{border-bottom:0}
+td.n{text-align:right;font-variant-numeric:tabular-nums}
+.pill{display:inline-block;font-size:11.5px;font-weight:600;border-radius:999px;padding:1px 8px;border:1px solid currentColor;white-space:nowrap}
+.ok{color:var(--ok)}.warn{color:var(--warn)}.down{color:var(--down)}
+.unv{color:var(--muted);border-style:dashed}
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin:6px 0}
+.chips span{font:12px ui-monospace,Menlo,monospace;background:var(--out);border-radius:5px;padding:2px 7px}
+.chips span i{font-style:normal;color:var(--muted)}
+figure{margin:14px 0;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px}
+figure img,figure svg{display:block;width:100%;height:auto;border-radius:6px}
+figcaption{font-size:13px;color:var(--muted);margin-top:8px}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:12px}
+.note{border-left:3px solid var(--warn);background:var(--orch);padding:8px 12px;border-radius:0 8px 8px 0;margin:10px 0}
+svg text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:var(--fg)}
+svg .t{font-size:14px;font-weight:700}
+svg .d{font-size:11.5px}
+svg .m{font-size:11px;fill:var(--muted)}
+svg .ar{stroke:var(--muted);stroke-width:1.6;fill:none;marker-end:url(#ah)}
+svg .box{stroke-width:1.5;rx:10}
+svg .inner{fill:var(--card);stroke:var(--line);stroke-width:1;rx:7}
+</style>
+</head>
+<body>
+<main>
+<h1>An AI agent stack</h1>
+<p class="sub">A generalised public description. Internal tool names and company specifics have been removed.</p>
+<p class="sub">How one engineer runs AI coding agents at work, inventoried from config files, process lists and CLI output on one machine in November 2026. Items that could not be confirmed carry an <span class="pill unv">unverified</span> pill and are collected <a href="#unverified">at the end</a>.</p>
+
+<nav>
+<a href="#overview">Overview</a><a href="#claude-code">Claude Code</a><a href="#task-runner">Task runner</a><a href="#orchestration">Orchestration layer</a><a href="#models">Models</a><a href="#slack">Slack</a><a href="#other">Other tools</a><a href="#lessons">Lessons</a><a href="#unverified">Unverified</a>
+</nav>
+
+<h2 id="overview">One-glance overview</h2>
+<p>Slack is the control plane, a task runner runs the agents, and an orchestration layer connects the two. Each agent is a Claude Code session in its own tmux session and git worktree.</p>
+
+<figure>
+<svg viewBox="0 0 1040 640" role="img" aria-label="Architecture: George talks to Slack and to the task runner directly; orchestration jobs read Slack and route to task runner tasks; each task is a Claude Code session that calls models through a gateway and produces PRs and pages.">
+<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs>
+
+<!-- George -->
+<rect class="box" x="400" y="14" width="240" height="62" fill="var(--card)" stroke="var(--fg)"/>
+<text class="t" x="520" y="40" text-anchor="middle">George</text>
+<text class="d" x="520" y="60" text-anchor="middle">phone · terminal · desktop apps</text>
+
+<!-- Slack -->
+<rect class="box" x="40" y="130" width="660" height="118" fill="var(--slack)" stroke="var(--slack-l)"/>
+<text class="t" x="56" y="153">Slack: the control plane</text>
+<rect class="inner" x="56" y="165" width="204" height="70"/>
+<text class="d" x="66" y="184" font-weight="700">Personal channel</text>
+<text class="m" x="66" y="201">one thread per agent session</text>
+<text class="m" x="66" y="217">top-level posts = instructions</text>
+<rect class="inner" x="272" y="165" width="204" height="70"/>
+<text class="d" x="282" y="184" font-weight="700">Notification workflow</text>
+<text class="m" x="282" y="201">Workflow Builder watches for</text>
+<text class="m" x="282" y="217">tagged messages, pings George</text>
+<rect class="inner" x="488" y="165" width="198" height="70"/>
+<text class="d" x="498" y="184" font-weight="700">Status canvas</text>
+<text class="m" x="498" y="201">Needs you · In flight · PRs</text>
+<text class="m" x="498" y="217">Done today · Jobs</text>
+
+<!-- Direct -->
+<rect class="box" x="740" y="130" width="260" height="118" fill="var(--out)" stroke="var(--out-l)"/>
+<text class="t" x="756" y="153">Direct surfaces</text>
+<text class="d" x="756" y="178">Task runner desktop app</text>
+<text class="d" x="756" y="197">Task runner terminal UI</text>
+<text class="d" x="756" y="216">PR review queue (prototype)</text>
+<text class="m" x="756" y="235">attach to any session and type</text>
+
+<!-- Orchestration layer -->
+<rect class="box" x="40" y="310" width="300" height="170" fill="var(--orch)" stroke="var(--orch-l)"/>
+<text class="t" x="56" y="333">Orchestration layer</text>
+<text class="m" x="206" y="333">launchd jobs + CLI</text>
+<rect class="inner" x="56" y="345" width="268" height="26"/>
+<text class="d" x="66" y="363"><tspan font-weight="700">relay</tspan> · every 2 min</text>
+<rect class="inner" x="56" y="377" width="268" height="26"/>
+<text class="d" x="66" y="395"><tspan font-weight="700">rollup</tspan> · every 30 min + 3 recaps</text>
+<rect class="inner" x="56" y="409" width="268" height="26"/>
+<text class="d" x="66" y="427"><tspan font-weight="700">pr-scan</tspan> · every 10 min</text>
+<rect class="inner" x="56" y="441" width="268" height="26"/>
+<text class="d" x="66" y="459"><tspan font-weight="700">CoS router</tspan> · a long-lived task</text>
+
+<!-- Task runner -->
+<rect class="box" x="400" y="310" width="600" height="170" fill="var(--runner)" stroke="var(--runner-l)"/>
+<text class="t" x="416" y="333">Task runner</text>
+<text class="m" x="512" y="333">36 tasks · tmux sessions · git worktrees · 9 repos</text>
+<rect class="box" x="416" y="345" width="568" height="122" fill="var(--cc)" stroke="var(--cc-l)"/>
+<text class="t" x="430" y="367">Claude Code session, one per task</text>
+<rect class="inner" x="430" y="378" width="172" height="78"/>
+<text class="d" x="440" y="396" font-weight="700">Instructions</text>
+<text class="m" x="440" y="413">CLAUDE.md (global + repo)</text>
+<text class="m" x="440" y="429">22 skills · 5 plugins</text>
+<text class="m" x="440" y="445">file-based memory</text>
+<rect class="inner" x="614" y="378" width="172" height="78"/>
+<text class="d" x="624" y="396" font-weight="700">Guard rails</text>
+<text class="m" x="624" y="413">writing-style hook</text>
+<text class="m" x="624" y="429">company-managed</text>
+<text class="m" x="624" y="445">guard rails</text>
+<rect class="inner" x="798" y="378" width="172" height="78"/>
+<text class="d" x="808" y="396" font-weight="700">Tools</text>
+<text class="m" x="808" y="413">11 MCP servers</text>
+<text class="m" x="808" y="429">gh · git · yarn · shell</text>
+<text class="m" x="808" y="445">subagents</text>
+
+<!-- Models -->
+<rect class="box" x="40" y="540" width="660" height="86" fill="var(--mod)" stroke="var(--mod-l)"/>
+<text class="t" x="56" y="563">Models</text>
+<rect class="inner" x="56" y="574" width="268" height="40"/>
+<text class="d" x="66" y="591" font-weight="700">Background jobs</text>
+<text class="m" x="66" y="606">smaller models, headless</text>
+<rect class="inner" x="416" y="574" width="270" height="40"/>
+<text class="d" x="426" y="591" font-weight="700">Company model gateway</text>
+<text class="m" x="426" y="606">interactive work: a larger model</text>
+
+<!-- Outputs -->
+<rect class="box" x="740" y="540" width="260" height="86" fill="var(--out)" stroke="var(--out-l)"/>
+<text class="t" x="756" y="563">Outputs</text>
+<text class="d" x="756" y="584">Pull requests (GitHub + internal)</text>
+<text class="d" x="756" y="602">Artifacts on internal pages site</text>
+<text class="m" x="756" y="618">Slack posts, canvas updates</text>
+
+<!-- arrows -->
+<path class="ar" d="M470 76 L380 128" marker-start="url(#ah)"/>
+<text class="m" x="318" y="100">posts, replies, pings</text>
+<path class="ar" d="M600 76 L850 128"/>
+<text class="m" x="740" y="96">attach, review</text>
+
+<path class="ar" d="M150 250 L150 308"/>
+<text class="m" x="46" y="283">relay reads</text>
+<path class="ar" d="M250 308 L250 250"/>
+<text class="m" x="258" y="283">canvas, recaps</text>
+
+<path class="ar" d="M560 308 L560 250"/>
+<text class="m" x="568" y="275">session threads,</text>
+<text class="m" x="568" y="289">tagged asks (Slack MCP)</text>
+<path class="ar" d="M870 250 L870 308"/>
+
+<path class="ar" d="M340 395 L398 395"/>
+<text class="m" x="369" y="383" text-anchor="middle">runner</text>
+<text class="m" x="369" y="412" text-anchor="middle">send</text>
+
+<path class="ar" d="M190 482 L190 572"/>
+<text class="m" x="198" y="515">claude -p</text>
+<path class="ar" d="M550 482 L550 572"/>
+<text class="m" x="558" y="515">inference</text>
+<path class="ar" d="M870 482 L870 538"/>
+</svg>
+<figcaption>How the pieces connect. Counts are from the machine at capture time.</figcaption>
+</figure>
+
+<div class="tiles">
+<div class="tile"><b>36</b><span>task runner tasks (35 live Claude sessions)</span></div>
+<div class="tile"><b>22</b><span>personal skills</span></div>
+<div class="tile"><b>11</b><span>MCP servers</span></div>
+<div class="tile"><b>6</b><span>orchestration launchd jobs</span></div>
+<div class="tile"><b>5</b><span>plugins</span></div>
+<div class="tile"><b>27.6k</b><span>transcript files touched in 14 days</span></div>
+</div>
+
+<h2 id="claude-code">Claude Code</h2>
+<p>Native install. Interactive sessions reach models through a company model gateway; the orchestration layer's headless jobs call <code>claude -p</code> directly.</p>
+
+<div class="grid">
+<div class="card"><h3>Settings</h3><ul>
+<li>A larger model by default; subagents also run on a larger model</li>
+<li>Output style: Learning; fullscreen TUI; auto-compact at 750k tokens</li>
+<li>Company-managed guard rails apply to every session</li>
+<li>No custom agents or slash commands; subagent types come from plugins</li>
+</ul></div>
+<div class="card"><h3>CLAUDE.md (global, 9 KB)</h3><ul>
+<li>Use yarn; one-line commands copied to the clipboard</li>
+<li>PR rules: link every artifact, pair cross-repo PRs, attach media from the CLI</li>
+<li>Review report format and a nit ladder for comments</li>
+<li>Open a session thread in the personal channel at the start of every task</li>
+<li>Check non-trivial claims with an independent, adversarial agent</li>
+</ul><p class="sub">Several repos also have their own repo-level CLAUDE.md.</p></div>
+<div class="card"><h3>Hooks</h3><ul>
+<li><b>Writing-style hook</b> (PreToolUse on the Slack MCP and Bash): injects a writing-voice guide and blocks GitHub comments that lack the agent disclaimer</li>
+<li><b>vm-reap</b> (SessionEnd): cleans up test VMs</li>
+<li>Company-managed guard rails</li>
+</ul></div>
+<div class="card"><h3>Memory</h3><ul>
+<li>File-based, one directory per project, indexed by <code>MEMORY.md</code></li>
+<li>151 projects known to Claude Code; 796 startups recorded</li>
+<li>6 scheduled tasks defined (PR pulse, weekly wins, a PR digest, three reminders) <span class="pill unv">enabled state unverified</span></li>
+</ul></div>
+</div>
+
+<h3>Skills (22 personal)</h3>
+<p class="sub">Number = recorded uses. Skills tied to specific internal codebases, systems or runbooks are grouped rather than named.</p>
+<div class="chips">
+<span>message writing voice <i>163</i></span><span>babysit-prs <i>120</i></span><span>notify me in chat <i>86</i></span><span>pr-review-standards <i>67</i></span><span>publish to internal pages site <i>19</i></span><span>pr-status-digest <i>10</i></span>
+<span>github-daily-digest</span><span>project-slack-update</span><span>slack-terminal-bridge</span><span>triage</span><span>weekly-wins</span><span>worktree-prune</span><span>ensure-documentation-of-new-features</span><span>codebase and project context skills</span><span>internal runbooks</span>
+</div>
+<p>Built-in skills used most: <code>code-review</code> (86) and <code>loop</code> (56). A shareable subset is kept in a separate repo.</p>
+
+<h3>Plugins</h3>
+<table>
+<tr><th>Plugin</th><th>Marketplace</th><th>What it adds</th></tr>
+<tr><td>clangd-lsp 1.0.0</td><td>claude-plugins-official</td><td>C++ language server (17 uses)</td></tr>
+<tr><td>pr-review-toolkit 1.0.1</td><td>claude-plugins-official</td><td>6 review subagents (10 uses)</td></tr>
+<tr><td>feature-dev 1.0.1</td><td>claude-plugins-official</td><td>architect, explorer and reviewer subagents</td></tr>
+<tr><td>claude-md-management 1.0.0</td><td>claude-plugins-official</td><td>CLAUDE.md audit and revise skills</td></tr>
+<tr><td>One company plugin</td><td>internal</td><td>Internal banners</td></tr>
+</table>
+<p class="sub">Only clangd-lsp appears in <code>enabledPlugins</code> <span class="pill unv">where the others are enabled: unverified</span></p>
+
+<h3>MCP servers</h3>
+<table>
+<tr><th>Server</th><th>Used for</th></tr>
+<tr><td>slack</td><td>Read and post messages, canvases, reactions</td></tr>
+<tr><td>chrome-devtools</td><td>Drive a browser over the debug port</td></tr>
+<tr><td>9 servers for internal engineering systems</td><td>Docs and code search, experiments, CI, error tracking, observability, test management, tickets</td></tr>
+</table>
+
+<h2 id="task-runner">Task runner</h2>
+<p>The task runner coordinates agent tasks. Each task is a tmux session running Claude Code, in a git worktree or a plain directory. A daemon tracks status from hook signals. It has a desktop app and a terminal UI; tasks are grouped by project, and the groups are synced from the orchestration layer.</p>
+
+<div class="grid">
+<div class="card"><h3>What's configured</h3><ul>
+<li>9 repos</li>
+<li>Editor Cursor; harness Claude</li>
+<li>A manual UI hook "Publish to Pages" sends the publish skill to the session</li>
+<li>Per-task auto rules: buddy-fixes, ci-fixes, conflict-fixes</li>
+</ul></div>
+<div class="card"><h3>How it's used</h3><ul>
+<li><b>Directory tasks</b> (21 <code>dir/*</code>, 7 <code>btw/*</code>): research, PM and side quests</li>
+<li><b>Worktree tasks</b> (8): real branches in product repos</li>
+<li><b><code>*-pm</code> tasks</b>: one long-lived "project manager" agent per project</li>
+<li><b><code>*-will-review</code> tasks</b>: one per PR under review; 12 review sessions on disk</li>
+<li><b><code>cos</code></b>: the Chief of Staff router (see the orchestration layer)</li>
+</ul></div>
+</div>
+
+<p>A PR review queue (prototype) shows a "For you" list of pull requests with Approve, Merge and a button that hands a PR to an agent as a task.</p>
+
+<h2 id="orchestration">Orchestration layer</h2>
+<p>About 830 lines of shell and Python, plus prompts. It makes the personal channel a two-way line to every agent and keeps one canvas current.</p>
+
+<figure>
+<svg viewBox="0 0 1040 250" role="img" aria-label="Message flow from a Slack post to an agent and back">
+<g>
+<rect class="box" x="10" y="60" width="150" height="74" fill="var(--slack)" stroke="var(--slack-l)"/>
+<text class="t" x="85" y="86" text-anchor="middle">1 · George posts</text>
+<text class="m" x="85" y="104" text-anchor="middle">in the personal channel,</text>
+<text class="m" x="85" y="119" text-anchor="middle">top-level or in a thread</text>
+
+<rect class="box" x="200" y="60" width="150" height="74" fill="var(--orch)" stroke="var(--orch-l)"/>
+<text class="t" x="275" y="86" text-anchor="middle">2 · relay</text>
+<text class="m" x="275" y="104" text-anchor="middle">a small model reads,</text>
+<text class="m" x="275" y="119" text-anchor="middle">skips bot posts, dedupes</text>
+
+<rect class="box" x="390" y="60" width="150" height="74" fill="var(--orch)" stroke="var(--orch-l)"/>
+<text class="t" x="465" y="86" text-anchor="middle">3 · deliver</text>
+<text class="m" x="465" y="104" text-anchor="middle">daemon: no model,</text>
+<text class="m" x="465" y="119" text-anchor="middle">picks the target session</text>
+
+<rect class="box" x="600" y="14" width="180" height="62" fill="var(--orch)" stroke="var(--orch-l)"/>
+<text class="t" x="690" y="38" text-anchor="middle">4a · CoS router</text>
+<text class="m" x="690" y="56" text-anchor="middle">answer, forward, or create a task</text>
+
+<rect class="box" x="600" y="118" width="180" height="62" fill="var(--runner)" stroke="var(--runner-l)"/>
+<text class="t" x="690" y="142" text-anchor="middle">4b · owning task</text>
+<text class="m" x="690" y="160" text-anchor="middle">runner sends to its session</text>
+
+<rect class="box" x="840" y="60" width="190" height="74" fill="var(--cc)" stroke="var(--cc-l)"/>
+<text class="t" x="935" y="86" text-anchor="middle">5 · agent acts</text>
+<text class="m" x="935" y="104" text-anchor="middle">replies in its thread; tags</text>
+<text class="m" x="935" y="119" text-anchor="middle">the message if it needs George</text>
+
+<path class="ar" d="M160 97 L198 97"/><path class="ar" d="M350 97 L388 97"/>
+<path class="ar" d="M540 85 L598 50"/><text class="m" x="528" y="52">top-level post</text>
+<path class="ar" d="M540 110 L598 145"/><text class="m" x="528" y="158">thread reply</text>
+<path class="ar" d="M780 45 L838 82"/><path class="ar" d="M780 149 L838 112"/>
+<path class="ar" d="M690 78 L690 116"/>
+<path class="ar" d="M935 136 L935 215 L85 215 L85 136"/>
+<text class="m" x="510" y="208" text-anchor="middle">6 · a notification workflow pings George; rollup files the ask under "Needs you" on the canvas</text>
+</g>
+</svg>
+<figcaption>The round trip for one message. Slack text from anyone else is treated as data, not instructions.</figcaption>
+</figure>
+
+<table>
+<tr><th>Piece</th><th>Runs</th><th>Model</th><th>What it does</th></tr>
+<tr><td><b>CoS router</b><br><code>prompts/cos.md</code></td><td>Long-lived task <code>cos</code></td><td>smaller model</td><td>Handles top-level posts: answers state questions from a snapshot, forwards instructions to an existing task, or creates a new task with the post as its prompt. It may not close or suspend tasks, or post outside the personal channel.</td></tr>
+<tr><td><b>relay</b><br><code>bin/relay.sh</code></td><td>Every 2 min (about 10 min outside 08 to 20h)</td><td>small model, a bigger one on retry</td><td>Reads the channel, thread replies and canvas comments with read-only tools, skipping bot and workflow posts and anything already handled. Thread replies go to the owning task and top-level posts to CoS.</td></tr>
+<tr><td><b>rollup</b><br><code>bin/rollup.sh</code></td><td>Every 30 min, plus 09:30, 14:00, 18:00</td><td>smaller model</td><td>Rewrites the canvas. Quiet runs call the model only when a state hash changed. The three timed runs post a recap and refresh "next" lines on artifact pages.</td></tr>
+<tr><td><b>PR scanner</b><br><code>bin/pr-scan.sh</code></td><td>Every 10 min</td><td>smaller model, only on changes</td><td>Diffs a <code>gh</code> snapshot of open PRs. May rerun infra flakes; everything else becomes a proposal in one Slack thread.</td></tr>
+<tr><td><b>Orchestrator CLI</b></td><td>Called by agents</td><td>none</td><td><code>session</code>, <code>next</code>, <code>ask</code>, <code>resolve</code>, <code>snapshot</code>, <code>projects</code>, <code>groups-sync</code>, <code>trust</code>. Writes one sidecar per task and one file per open ask.</td></tr>
+<tr><td><b>Delivery daemon</b></td><td>Called by relay</td><td>none</td><td>Delivers each relay event to the right task runner session. Also contains a Slack Socket Mode listener <span class="pill unv">not seen running</span></td></tr>
+</table>
+
+<div class="grid">
+<div class="card"><h3>Safety rails on headless runs</h3><ul>
+<li>Budget cap per run ($0.20 relay, $0.40 on its retry, $1 others) and a 15-minute timeout</li>
+<li>User hooks disabled; a deny list blocks writes, git, <code>gh</code> comments, merges and web fetches</li>
+<li>A free preflight check before any model call; hourly backoff after 3 failures</li>
+<li>Locks stop a job overlapping itself; the PR scanner skips PRs a live session is babysitting</li>
+</ul></div>
+<div class="card"><h3>The canvas</h3><ul>
+<li>Sections: Needs you, In flight (by project), PRs, Done today, Jobs</li>
+<li>At capture: 16 items waiting on George, 20 open PRs, 23 done today</li>
+<li>Project groups are shared by the canvas, the task runner and the artifact site</li>
+<li>Read through the Slack MCP <span class="pill unv">no screenshot</span></li>
+</ul></div>
+</div>
+
+<h2 id="models">Models used where</h2>
+<table>
+<tr><th>Where</th><th>Model</th></tr>
+<tr><td>Interactive sessions and their subagents</td><td>a larger model, through the company model gateway</td></tr>
+<tr><td>CoS router and background jobs (relay, rollup, PR scanner)</td><td>smaller models</td></tr>
+</table>
+
+<h2 id="slack">Slack integrations</h2>
+<div class="grid">
+<div class="card"><h3>Channels and surfaces</h3><ul>
+<li><b>Personal channel</b>: session threads, asks, recaps, the PR scanner thread</li>
+<li><b>Status canvas</b>: the live board</li>
+<li><b>A second personal channel</b>: weekly wins and PR pulse</li>
+<li><b>Internal pages site</b>: every artifact mirrored, grouped by project</li>
+</ul></div>
+<div class="card"><h3>Mechanics</h3><ul>
+<li><b>Slack MCP</b> is the only write path for agents</li>
+<li><b>Notification workflow</b>: a Workflow Builder automation that turns tagged messages into a push notification</li>
+<li><b>Session thread protocol</b> (a notify skill): open a thread first, poll it every 60 s when the relay is down</li>
+<li><b>slack-terminal-bridge</b>: an older MCP relay kept alive by launchd</li>
+</ul></div>
+</div>
+
+<h2 id="other">Other AI tools on the machine</h2>
+<table>
+<tr><th>Tool</th><th>Version</th><th>Notes</th></tr>
+<tr><td>Claude desktop app</td><td>4.4212.0</td><td>No MCP servers configured</td></tr>
+<tr><td>Cursor</td><td>3.27.22</td><td>The task runner's editor; Claude Code extension installed; one MCP adaptor configured</td></tr>
+<tr><td>VS Code</td><td></td><td>A ChatGPT extension only; no Claude extension</td></tr>
+<tr><td>Codex CLI</td><td>0.169.0</td><td>Installed; usage not measured</td></tr>
+<tr><td>Ollama</td><td>0.32.1</td><td>Service running, no models pulled</td></tr>
+<tr><td>whisper-cpp</td><td></td><td>Local speech-to-text, via Homebrew</td></tr>
+<tr><td>Tart</td><td></td><td>macOS VMs for closed-loop testing of a desktop app by agents</td></tr>
+<tr><td>Helper apps</td><td></td><td>"Claude Code URL Handler" and a link handler for the task runner</td></tr>
+</table>
+<p>Other scheduled jobs outside the orchestration layer: a Monday 10:00 SLA check, and an older daily Slack digest, which the orchestration layer's morning recap replaced.</p>
+
+<h2 id="lessons">Lessons</h2>
+<p class="note">Interactive sessions and headless background jobs can fail independently. Agents can keep working all day while the relay and the canvas go quiet, so a stale board is the symptom to watch for.</p>
+
+<h2 id="unverified">Could not verify</h2>
+<ul>
+<li><b>Canvas screenshot.</b> The canvas was not open in a window; its structure was read through the Slack MCP.</li>
+<li><b>chrome-devtools MCP target.</b> Nothing was listening on the debug port at capture.</li>
+<li><b>Delivery daemon Socket Mode.</b> The code exists; no running process was found, so the relay path appears to be the only transport.</li>
+<li><b>Scheduled tasks.</b> Six definitions exist; which are enabled was not checked.</li>
+<li><b>How the task runner wires its signal hook</b> into each session was not traced.</li>
+<li><b>Lifetime stats.</b> The stats cache was stale, so no lifetime totals are quoted.</li>
+<li><b>Codex, Cursor and Ollama usage.</b> Installed versions only.</li>
+</ul>
+<p class="sub">Left out on purpose for a public page: internal tool and repository names, connected internal systems, security and access details, model versions, task activity text, names of people, account IDs, tokens, screenshots and personal projects.</p>
+</main>
+</body>
+</html>
